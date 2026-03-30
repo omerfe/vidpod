@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
+import { AppHeader } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Providers } from "@/components/providers";
+import { ShellFooter } from "@/components/shell-footer";
 import { cn } from "@/lib/utils";
-import { Providers } from "../components/providers";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -38,8 +41,18 @@ export default function RootLayout({
         manrope.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+      <body className="h-screen flex flex-col">
+        <Providers>
+          <AppSidebar />
+
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <AppHeader />
+            <main className="flex-1 overflow-y-auto bg-muted/30">
+              {children}
+            </main>
+            <ShellFooter />
+          </div>
+        </Providers>
       </body>
     </html>
   );

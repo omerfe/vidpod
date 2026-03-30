@@ -7,15 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAdsWorkspaceSession } from "../../../../hooks/use-ads-workspace-session";
+import { useEditorSession } from "../../../../hooks/use-editor-session";
+import { useKeyboardShortcuts } from "../../../../hooks/use-keyboard-shortcuts";
+import { usePlaybackEngine } from "../../../../hooks/use-playback-engine";
 import { EpisodeHeader } from "./episode-header";
 import { EpisodeWorkspaceSwitcher } from "./episode-workspace-switcher";
 import { MarkerPanelSlot } from "./marker/marker-panel";
 import { PlayerPanelSlot } from "./player-panel";
 import { TimelinePanelSlot } from "./timeline-panel";
-import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
-import { useEditorSession } from "./use-editor-session";
-import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
-import { usePlaybackEngine } from "./use-playback-engine";
 
 export function AdsEditorScreen({ episodeSlug }: { episodeSlug: string }) {
   const session = useAdsWorkspaceSession(episodeSlug);

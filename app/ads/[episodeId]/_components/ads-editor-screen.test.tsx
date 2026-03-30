@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAdsWorkspaceSession } from "@/hooks/use-ads-workspace-session";
+import type { EditorSession } from "@/hooks/use-editor-session";
 import type { EpisodeEditorData, EpisodeListItem } from "@/lib/ads/contracts";
 import { AdsEditorScreen } from "./ads-editor-screen";
-import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
-import type { EditorSession } from "./use-editor-session";
 
-vi.mock("./use-ads-workspace-session", () => ({
+vi.mock("@/hooks/use-ads-workspace-session", () => ({
   useAdsWorkspaceSession: vi.fn(),
 }));
 
@@ -13,7 +13,7 @@ vi.mock("./marker/create-ad-marker-dialog", () => ({
   CreateAdMarkerDialog: () => null,
 }));
 
-vi.mock("./use-editor-session", () => ({
+vi.mock("@/hooks/use-editor-session", () => ({
   useEditorSession: (opts: {
     serverMarkers: EditorSession["markers"];
   }): EditorSession => ({

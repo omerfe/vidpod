@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { EditorEpisode } from "@/lib/ads/contracts";
+import type { PlaybackEngine } from "../../../../hooks/use-playback-engine";
 import { PlayerControls } from "./player-controls";
-import type { PlaybackEngine } from "./use-playback-engine";
 
 interface PlayerPanelSlotProps {
   episode: EditorEpisode;

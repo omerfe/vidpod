@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import type { PlaybackEngine } from "./use-playback-engine";
+import type { PlaybackEngine } from "../../../../hooks/use-playback-engine";
 
 interface PlayerControlsProps {
   engine: PlaybackEngine;

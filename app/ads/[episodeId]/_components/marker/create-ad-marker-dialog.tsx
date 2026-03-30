@@ -26,7 +26,7 @@ export function CreateAdMarkerDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         {open ? (
           <CreateAdMarkerDialogSession
             episodeSlug={episodeSlug}

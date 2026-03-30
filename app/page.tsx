@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
   return (
-    <main className="flex flex-1 items-center justify-center p-8">
-      <Card className="w-full max-w-2xl border-0 ring-1 ring-foreground/10">
+    <div className="flex flex-1 items-center justify-center h-full">
+      <Card>
         <CardHeader>
           <CardTitle>Vidpod ads editor MVP</CardTitle>
         </CardHeader>
@@ -26,6 +26,6 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

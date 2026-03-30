@@ -24,8 +24,8 @@ import {
   zoomIn,
   zoomOut,
 } from "@/lib/ads/timeline-math";
+import type { PlaybackEngine } from "../../../../hooks/use-playback-engine";
 import { formatTimecodeHMS } from "./ads-editor-utils";
-import type { PlaybackEngine } from "./use-playback-engine";
 
 const WAVEFORM_BAR_COUNT = 300;
 
@@ -418,7 +418,7 @@ function markerTypeShortLabel(type: EditorMarker["type"]): string {
 function markerBlockBgClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "bg-rose-300/70 dark:bg-rose-800/50";
+      return "bg-blue-300/70 dark:bg-blue-800/50";
     case "auto":
       return "bg-emerald-300/70 dark:bg-emerald-800/50";
     case "ab_test":
@@ -431,7 +431,7 @@ function markerBlockBgClass(type: EditorMarker["type"]): string {
 function markerBlockBorderClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "border-rose-500/60 dark:border-rose-600/40";
+      return "border-blue-500/60 dark:border-blue-600/40";
     case "auto":
       return "border-emerald-500/60 dark:border-emerald-600/40";
     case "ab_test":
@@ -444,7 +444,7 @@ function markerBlockBorderClass(type: EditorMarker["type"]): string {
 function markerBadgeClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "bg-rose-600 text-white dark:bg-rose-500";
+      return "bg-blue-600 text-white dark:bg-blue-500";
     case "auto":
       return "bg-emerald-600 text-white dark:bg-emerald-500";
     case "ab_test":

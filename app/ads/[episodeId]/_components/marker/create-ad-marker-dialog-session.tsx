@@ -80,7 +80,7 @@ export function CreateAdMarkerDialogSession(props: {
         void form.handleSubmit();
       }}
     >
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4">
         <DialogHeader className="gap-1 space-y-0 text-left">
           <DialogTitle className="text-lg font-semibold">
             Create ad marker
@@ -121,7 +121,7 @@ export function CreateAdMarkerDialogSession(props: {
         ) : null}
       </div>
 
-      <DialogFooter className="border-t bg-muted/50">
+      <DialogFooter className="bg-popover border-t-0">
         {values.step === 1 ? (
           <>
             <Button
