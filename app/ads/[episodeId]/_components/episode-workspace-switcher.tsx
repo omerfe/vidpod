@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { EpisodeListItem } from "@/convex/lib/contracts";
+import type { EpisodeListItem } from "@/lib/ads/contracts";
 
 interface EpisodeWorkspaceSwitcherProps {
   currentEpisodeSlug: string;

@@ -3,10 +3,7 @@
 import { convexQuery, useConvexQuery } from "@convex-dev/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/convex/_generated/api";
-import type {
-  EpisodeEditorData,
-  EpisodeListItem,
-} from "@/convex/lib/contracts";
+import type { EpisodeEditorData, EpisodeListItem } from "@/lib/ads/contracts";
 
 export type AdsWorkspaceSession =
   | {

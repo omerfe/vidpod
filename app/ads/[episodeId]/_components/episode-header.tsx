@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { EditorEpisode, EpisodeEditorStats } from "@/convex/lib/contracts";
+import type { EditorEpisode, EpisodeEditorStats } from "@/lib/ads/contracts";
 import { formatDuration, formatPublishedAt } from "./ads-editor-utils";
 
 interface EpisodeHeaderProps {

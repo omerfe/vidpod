@@ -1,10 +1,13 @@
 import { ConvexError } from "convex/values";
+import { normalizeMarkerStartMs } from "../../lib/ads/marker";
 import type { Doc } from "../_generated/dataModel";
 import type {
   AssignmentRole,
   MarkerMutationSummary,
   MarkerType,
 } from "../lib/contracts";
+
+export { normalizeMarkerStartMs };
 
 export const primaryEpisodeSlug = "episode-001";
 
@@ -60,14 +63,6 @@ export const seedMediaSpecs = {
   } satisfies SeedMediaSpec,
 };
 
-export function normalizeMarkerStartMs(
-  rawStartMs: number,
-  episodeDurationMs: number,
-): number {
-  const ceiling = Math.max(episodeDurationMs - 1_000, 0);
-  return Math.max(0, Math.min(Math.round(rawStartMs), ceiling));
-}
-
 export function normalizeLabel(
   markerType: MarkerType,
   input: string | undefined,
@@ -112,6 +107,22 @@ export function validateAssignmentIds<T extends string>(
   }
 
   return uniqueIds;
+}
+
+export function assertNoExactStartOverlap(args: {
+  candidateStartMs: number;
+  existingMarkers: { id: string; startMs: number }[];
+  excludeMarkerId?: string;
+}): void {
+  const blocking = args.existingMarkers.find(
+    (marker) =>
+      marker.startMs === args.candidateStartMs &&
+      marker.id !== args.excludeMarkerId,
+  );
+
+  if (blocking) {
+    throw new ConvexError("Another marker already starts at this timestamp");
+  }
 }
 
 export function getAssignmentRole(markerType: MarkerType): AssignmentRole {

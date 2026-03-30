@@ -1,8 +1,5 @@
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import type { EditorEpisode, EditorMarker } from "@/convex/lib/contracts";
+import { Card, CardContent } from "@/components/ui/card";
+import type { EditorEpisode, EditorMarker } from "@/lib/ads/contracts";
 import { formatTimecode, markerTypeLabel } from "./ads-editor-utils";
 
 interface TimelinePanelSlotProps {

@@ -1,4 +1,4 @@
-import type { MarkerType } from "@/convex/lib/contracts";
+import type { MarkerType } from "@/lib/ads/contracts";
 
 export function formatTimecode(ms: number) {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));

@@ -1,14 +1,26 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import type { EditorMarker } from "@/convex/lib/contracts";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { EditorAdAsset, EditorMarker } from "@/lib/ads/contracts";
 import { formatTimecode, markerTypeLabel } from "./ads-editor-utils";
+import { CreateAdMarkerDialog } from "./create-ad-marker-dialog";
 
-export function MarkerPanelSlot({ markers }: { markers: EditorMarker[] }) {
+export function MarkerPanelSlot({
+  episodeSlug,
+  episodeDurationMs,
+  adLibrary,
+  markers,
+  playbackTimeMs,
+}: {
+  episodeSlug: string;
+  episodeDurationMs: number;
+  adLibrary: EditorAdAsset[];
+  markers: EditorMarker[];
+  playbackTimeMs: number;
+}) {
+  const [createOpen, setCreateOpen] = useState(false);
+
   return (
     <Card
       data-slot="marker-panel"
@@ -16,8 +28,20 @@ export function MarkerPanelSlot({ markers }: { markers: EditorMarker[] }) {
     >
       <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
         <CardTitle>Ad markers</CardTitle>
-        <div className="text-sm text-muted-foreground">
-          {markers.length} {markers.length === 1 ? "marker" : "markers"}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setCreateOpen(true);
+            }}
+          >
+            Create ad marker
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            {markers.length} {markers.length === 1 ? "marker" : "markers"}
+          </div>
         </div>
       </CardHeader>
 
@@ -62,6 +86,14 @@ export function MarkerPanelSlot({ markers }: { markers: EditorMarker[] }) {
           </div>
         ))}
       </CardContent>
+      <CreateAdMarkerDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        episodeSlug={episodeSlug}
+        episodeDurationMs={episodeDurationMs}
+        adLibrary={adLibrary}
+        playbackTimeMs={playbackTimeMs}
+      />
     </Card>
   );
 }

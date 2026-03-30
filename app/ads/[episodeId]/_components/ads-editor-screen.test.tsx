@@ -1,14 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-  EpisodeEditorData,
-  EpisodeListItem,
-} from "@/convex/lib/contracts";
+import type { EpisodeEditorData, EpisodeListItem } from "@/lib/ads/contracts";
 import { AdsEditorScreen } from "./ads-editor-screen";
 import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
 
 vi.mock("./use-ads-workspace-session", () => ({
   useAdsWorkspaceSession: vi.fn(),
+}));
+
+vi.mock("./create-ad-marker-dialog", () => ({
+  CreateAdMarkerDialog: () => null,
 }));
 
 const mockedUseAdsWorkspaceSession = vi.mocked(useAdsWorkspaceSession);
@@ -52,7 +53,27 @@ const readyEditorData: EpisodeEditorData = {
       posterUrl: null,
     },
   },
-  adLibrary: [],
+  adLibrary: [
+    {
+      id: "ad-1",
+      slug: "coffee-break",
+      name: "Coffee Break",
+      campaign: "Spring Sponsors",
+      folder: "Host Reads",
+      durationMs: 6_000,
+      cta: "Visit coffeebreak.example/vidpod",
+      media: {
+        id: "media-ad-1",
+        label: "Coffee Break Ad",
+        kind: "ad_video",
+        sourceType: "public",
+        url: "/mock-ads/ad-coffee-break.mp4",
+        mimeType: "video/mp4",
+        durationMs: 6_000,
+        posterUrl: null,
+      },
+    },
+  ],
   markers: [
     {
       id: "marker-1",
@@ -203,6 +224,9 @@ describe("AdsEditorScreen", () => {
     expect(screen.getAllByText("0:02").length).toBeGreaterThan(0);
     expect(screen.getByText("A/B test")).toBeInTheDocument();
     expect(screen.getByText("Seeded directional signal")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Create ad marker" }),
+    ).toBeInTheDocument();
   });
 
   it("shows the marker-panel empty state when an episode has no markers", () => {
@@ -225,7 +249,9 @@ describe("AdsEditorScreen", () => {
     render(<AdsEditorScreen episodeSlug="episode-001" />);
 
     expect(
-      screen.getByText("No markers yet. This episode is ready for the first ad insert."),
+      screen.getByText(
+        "No markers yet. This episode is ready for the first ad insert.",
+      ),
     ).toBeInTheDocument();
   });
 });

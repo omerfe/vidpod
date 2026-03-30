@@ -60,6 +60,15 @@ describe("ads backend", () => {
       }),
     ).rejects.toThrow("A/B test markers require at least two ad options");
 
+    await expect(
+      t.mutation(api.ads.createMarker, {
+        episodeSlug: "episode-001",
+        markerType: "static",
+        startMs: 2_000,
+        adAssetIds: [assetA.id as Id<"adAssets">],
+      }),
+    ).rejects.toThrow("Another marker already starts at this timestamp");
+
     const createdMarker = await t.mutation(api.ads.createMarker, {
       episodeSlug: "episode-001",
       markerType: "static",
@@ -70,6 +79,13 @@ describe("ads backend", () => {
 
     expect(createdMarker.assignmentCount).toBe(1);
     expect(createdMarker.type).toBe("static");
+
+    await expect(
+      t.mutation(api.ads.updateMarker, {
+        markerId: createdMarker.id as Id<"adMarkers">,
+        startMs: 2_000,
+      }),
+    ).rejects.toThrow("Another marker already starts at this timestamp");
 
     const updatedMarker = await t.mutation(api.ads.updateMarker, {
       markerId: createdMarker.id as Id<"adMarkers">,

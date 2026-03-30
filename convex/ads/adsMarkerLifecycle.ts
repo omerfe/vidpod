@@ -3,6 +3,7 @@ import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import type { MarkerMutationSummary, MarkerType } from "../lib/contracts";
 import {
+  assertNoExactStartOverlap,
   normalizeLabel,
   normalizeMarkerStartMs,
   toMarkerSummary,
@@ -33,6 +34,21 @@ export async function createMarker(
   const startMs = normalizeMarkerStartMs(args.startMs, episode.durationMs);
   const adAssetIds = validateAssignmentIds(args.markerType, args.adAssetIds);
   await requireAdAssets(ctx, adAssetIds);
+
+  const siblings = await ctx.db
+    .query("adMarkers")
+    .withIndex("by_episodeId_and_startMs", (q) =>
+      q.eq("episodeId", episode._id),
+    )
+    .collect();
+
+  assertNoExactStartOverlap({
+    candidateStartMs: startMs,
+    existingMarkers: siblings.map((marker) => ({
+      id: marker._id,
+      startMs: marker.startMs,
+    })),
+  });
 
   const markerId = await ctx.db.insert("adMarkers", {
     episodeId: episode._id,
@@ -102,6 +118,22 @@ export async function updateMarker(
     args.startMs ?? marker.startMs,
     episode.durationMs,
   );
+  const siblings = await ctx.db
+    .query("adMarkers")
+    .withIndex("by_episodeId_and_startMs", (q) =>
+      q.eq("episodeId", episode._id),
+    )
+    .collect();
+
+  assertNoExactStartOverlap({
+    candidateStartMs: nextStartMs,
+    existingMarkers: siblings.map((row) => ({
+      id: row._id,
+      startMs: row.startMs,
+    })),
+    excludeMarkerId: marker._id,
+  });
+
   const nextLabel = normalizeLabel(nextType, args.label ?? marker.label);
   const nextNotes =
     args.notes === undefined ? marker.notes : args.notes.trim() || undefined;
