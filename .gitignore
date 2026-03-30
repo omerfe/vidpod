@@ -30,6 +30,7 @@ CLAUDE.md
 # misc
 .DS_Store
 *.pem
+/figma-screenshots/
 
 # debug
 npm-debug.log*
