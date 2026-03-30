@@ -1,34 +1,23 @@
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import type { EditorEpisode, EditorMarker } from "@/lib/ads/contracts";
-import { formatTimecode } from "./ads-editor-utils";
+import type { EditorEpisode } from "@/lib/ads/contracts";
+import { PlayerControls } from "./player-controls";
+import type { PlaybackEngine } from "./use-playback-engine";
 
 interface PlayerPanelSlotProps {
   episode: EditorEpisode;
-  markers: EditorMarker[];
-  onPlaybackTimeMs?: (ms: number) => void;
+  engine: PlaybackEngine;
 }
 
-export function PlayerPanelSlot({
-  episode,
-  markers,
-  onPlaybackTimeMs,
-}: PlayerPanelSlotProps) {
+export function PlayerPanelSlot({ episode, engine }: PlayerPanelSlotProps) {
   return (
-    <Card
-      data-slot="player-panel"
-      className="border-0 ring-1 ring-foreground/10"
-    >
-      <CardContent className="flex flex-col gap-4 p-4">
+    <Card data-slot="player-panel">
+      <CardContent className="flex flex-col gap-3">
         <video
-          className="aspect-video w-full rounded-lg border border-border/60 bg-black"
-          controls
+          className="aspect-video w-full shrink-0 rounded-lg bg-black"
           preload="metadata"
           src={episode.media.url}
-          onTimeUpdate={(event) => {
-            const ms = Math.round(event.currentTarget.currentTime * 1000);
-            onPlaybackTimeMs?.(ms);
-          }}
+          poster={episode.media.posterUrl ?? undefined}
+          {...engine.bindVideoProps}
         >
           <track
             default
@@ -39,13 +28,7 @@ export function PlayerPanelSlot({
           />
         </video>
 
-        <div className="flex flex-wrap gap-2">
-          {markers.map((marker) => (
-            <Badge key={marker.id} variant="outline">
-              {formatTimecode(marker.startMs)}
-            </Badge>
-          ))}
-        </div>
+        <PlayerControls engine={engine} />
       </CardContent>
     </Card>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,10 +14,11 @@ import { MarkerPanelSlot } from "./marker/marker-panel";
 import { PlayerPanelSlot } from "./player-panel";
 import { TimelinePanelSlot } from "./timeline-panel";
 import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
+import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
+import { usePlaybackEngine } from "./use-playback-engine";
 
 export function AdsEditorScreen({ episodeSlug }: { episodeSlug: string }) {
   const session = useAdsWorkspaceSession(episodeSlug);
-  const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
 
   if (session.status === "loading") {
     return <LoadingState />;
@@ -47,37 +47,45 @@ export function AdsEditorScreen({ episodeSlug }: { episodeSlug: string }) {
     );
   }
 
-  const { editorData } = session;
+  return (
+    <ReadyWorkspace episodeSlug={episodeSlug} editorData={session.editorData} />
+  );
+}
+
+function ReadyWorkspace({
+  episodeSlug,
+  editorData,
+}: {
+  episodeSlug: string;
+  editorData: NonNullable<
+    Extract<
+      ReturnType<typeof useAdsWorkspaceSession>,
+      { status: "ready" }
+    >["editorData"]
+  >;
+}) {
+  const engine = usePlaybackEngine(editorData.episode.durationMs);
+
+  useKeyboardShortcuts({
+    togglePlay: engine.togglePlay,
+    skipForward: engine.skipForward,
+    skipBackward: engine.skipBackward,
+  });
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="px-8 pt-6 pb-4">
-        <Link
-          href="/"
-          className="mb-4 inline-flex text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {"<"} Ads
-        </Link>
-        <EpisodeHeader episode={editorData.episode} stats={editorData.stats} />
-      </div>
+    <div className="flex min-h-full flex-col px-8 py-6 gap-6">
+      <EpisodeHeader episode={editorData.episode} />
 
-      <div className="grid h-full min-h-0 flex-1 grid-cols-1 gap-6 px-8 pb-4 lg:grid-cols-[1fr_2fr]">
+      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[1fr_2fr]">
         <MarkerPanelSlot
           episodeSlug={episodeSlug}
           episodeDurationMs={editorData.episode.durationMs}
           adLibrary={editorData.adLibrary}
           markers={editorData.markers}
-          playbackTimeMs={playbackTimeMs}
+          playbackTimeMs={engine.currentTimeMs}
         />
-        <PlayerPanelSlot
-          episode={editorData.episode}
-          markers={editorData.markers}
-          onPlaybackTimeMs={setPlaybackTimeMs}
-        />
-        <TimelinePanelSlot
-          episode={editorData.episode}
-          markers={editorData.markers}
-        />
+        <PlayerPanelSlot episode={editorData.episode} engine={engine} />
+        <TimelinePanelSlot markers={editorData.markers} engine={engine} />
       </div>
     </div>
   );

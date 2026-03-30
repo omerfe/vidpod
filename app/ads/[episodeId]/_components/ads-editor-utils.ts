@@ -29,8 +29,8 @@ export function formatDuration(ms: number) {
 
 export function formatPublishedAt(value: string) {
   return new Intl.DateTimeFormat("en", {
-    month: "short",
     day: "numeric",
+    month: "long",
     year: "numeric",
   }).format(new Date(value));
 }

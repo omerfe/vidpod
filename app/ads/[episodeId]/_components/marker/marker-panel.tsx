@@ -1,9 +1,9 @@
-import { Sparkles, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EditorAdAsset, EditorMarker } from "@/lib/ads/contracts";
+import { PlusIcon, Trash2, WandIcon } from "lucide-react";
+import { useState } from "react";
 import { formatTimecodeHMS, markerTypeLabel } from "../ads-editor-utils";
 import { CreateAdMarkerDialog } from "./create-ad-marker-dialog";
 
@@ -25,84 +25,43 @@ export function MarkerPanelSlot({
   return (
     <Card
       data-slot="marker-panel"
-      className="border-border/60 bg-card shadow-sm min-h-[40svh]"
+      className="border-border/60 bg-card shadow-sm"
     >
-      <CardHeader className="space-y-0 px-5 pt-5 pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <CardTitle className="text-base font-semibold tracking-[-0.01em]">
-            Ad markers
-          </CardTitle>
-          <div className="text-xs font-medium text-muted-foreground">
-            {markers.length} {markers.length === 1 ? "marker" : "markers"}
-          </div>
+      <CardHeader className="space-y-0 flex items-start justify-between gap-4">
+        <CardTitle>Ad markers</CardTitle>
+        <div className="text-muted-foreground">
+          {markers.length} {markers.length === 1 ? "marker" : "markers"}
         </div>
       </CardHeader>
 
-      <CardContent className="flex h-full flex-col px-5 pb-5">
+      <CardContent className="flex h-full flex-col justify-between">
         {markers.length === 0 ? (
           <div className="flex min-h-52 flex-1 items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20 px-5 text-center text-sm text-muted-foreground">
             No markers yet. This episode is ready for the first ad insert.
           </div>
         ) : (
-          <div className="flex flex-1 flex-col gap-3 max-h-[20svh] overflow-y-auto">
+          <div className="flex flex-1 flex-col gap-3 max-h-[70%] overflow-y-auto">
             {markers.map((marker, index) => (
-              <div
-                key={marker.id}
-                className="rounded-xl border border-border/60 bg-background px-4 py-3 shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-3 text-xs font-medium tabular-nums text-muted-foreground">
-                    {index + 1}
-                  </div>
-                  <span className="rounded-md border border-border/70 bg-muted/30 px-2 py-1 text-xs font-medium tabular-nums text-foreground">
-                    {formatTimecodeHMS(marker.startMs)}
-                  </span>
-                  <Badge className={markerTypeBadgeClassName(marker.type)}>
-                    {markerTypeLabel(marker.type)}
-                  </Badge>
-                  <div className="ml-auto flex items-center gap-2">
-                    <button
-                      type="button"
-                      disabled
-                      className="text-xs font-medium text-foreground disabled:opacity-60"
-                    >
-                      Edit
-                    </button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      disabled
-                      className="size-7 rounded-md border-destructive/20 bg-destructive/10 text-destructive shadow-none disabled:pointer-events-none disabled:opacity-60"
-                    >
-                      <Trash2 className="size-3.5" />
-                      <span className="sr-only">Delete marker</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <MarkerItem key={marker.id} marker={marker} index={index} />
             ))}
           </div>
         )}
 
-        <div className="mt-5 space-y-2 border-t border-border/60 pt-4">
+        <div className="space-y-2">
           <Button
             type="button"
-            className="h-10 w-full rounded-lg bg-foreground text-background hover:bg-foreground/90"
             onClick={() => {
               setCreateOpen(true);
             }}
+            className="w-full"
+            size="lg"
           >
             Create ad marker
+            <PlusIcon className="size-4" />
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled
-            className="h-10 w-full rounded-lg border-border/70 bg-background text-foreground shadow-none disabled:pointer-events-none disabled:opacity-60"
-          >
-            <Sparkles className="size-4" />
+          <Button type="button" size="lg" variant="outline" className="w-full">
             Automatically place
+            <WandIcon className="size-4" />
           </Button>
         </div>
       </CardContent>
@@ -115,6 +74,49 @@ export function MarkerPanelSlot({
         playbackTimeMs={playbackTimeMs}
       />
     </Card>
+  );
+}
+
+function MarkerItem({
+  marker,
+  index,
+}: {
+  marker: EditorMarker;
+  index: number;
+}) {
+  return (
+    <div className="bg-background flex items-center gap-2">
+      <div className="w-3 text-xs font-medium tabular-nums text-muted-foreground">
+        {index + 1}
+      </div>
+      <div className="flex items-center justify-between border border-border rounded-xl p-3 w-full">
+        <span className="text-xs font-medium tabular-nums text-foreground">
+          {formatTimecodeHMS(marker.startMs)}
+        </span>
+        <Badge className={markerTypeBadgeClassName(marker.type)}>
+          {markerTypeLabel(marker.type)}
+        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="font-medium text-foreground disabled:opacity-60"
+          >
+            Edit
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled
+            className="size-7 rounded-md border-destructive/20 bg-destructive/10 text-destructive shadow-none disabled:pointer-events-none disabled:opacity-60"
+          >
+            <Trash2 className="size-3.5" />
+            <span className="sr-only">Delete marker</span>
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

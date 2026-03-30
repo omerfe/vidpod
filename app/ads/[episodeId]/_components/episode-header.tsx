@@ -1,34 +1,30 @@
-import { Badge } from "@/components/ui/badge";
-import type { EditorEpisode, EpisodeEditorStats } from "@/lib/ads/contracts";
-import { formatDuration, formatPublishedAt } from "./ads-editor-utils";
+import type { EditorEpisode } from "@/lib/ads/contracts";
+import { DotIcon } from "lucide-react";
+import Link from "next/link";
+import { formatPublishedAt } from "./ads-editor-utils";
 
 interface EpisodeHeaderProps {
   episode: EditorEpisode;
-  stats: EpisodeEditorStats;
 }
 
-export function EpisodeHeader({ episode, stats }: EpisodeHeaderProps) {
+export function EpisodeHeader({ episode }: EpisodeHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant="outline">Episode {episode.episodeNumber}</Badge>
-        <Badge variant="outline">
-          {formatPublishedAt(episode.publishedAt)}
-        </Badge>
-        <Badge variant="outline">{formatDuration(episode.durationMs)}</Badge>
-      </div>
+      <Link
+        href="/"
+        className="inline-flex text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {"<"} Ads
+      </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight leading-tight">
-          {episode.title}
-        </h1>
-      </div>
+      <h1 className="text-2xl font-bold tracking-tight leading-tight">
+        {episode.title}
+      </h1>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span>{stats.totalMarkers} markers</span>
-        <span>{stats.staticMarkers} static</span>
-        <span>{stats.autoMarkers} auto</span>
-        <span>{stats.abTestMarkers} A/B tests</span>
+      <div className="flex flex-wrap items-center gap-px text-sm text-muted-foreground">
+        <span>Episode {episode.episodeNumber}</span>
+        <DotIcon className="size-4" />
+        <span>{formatPublishedAt(episode.publishedAt)}</span>
       </div>
     </div>
   );
