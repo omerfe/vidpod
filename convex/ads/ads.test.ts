@@ -1,16 +1,15 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
-import schema from "./schema";
-
-const modules = import.meta.glob("./**/*.ts");
+import { modules } from "../../test/convexModuleGlob";
+import { api, internal } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
+import schema from "../schema";
 
 describe("ads backend", () => {
   it("seeds and hydrates episode editor data", async () => {
     const t = convexTest(schema, modules);
 
-    const seedResult = await t.mutation(api.ads.seedMvpData, {});
+    const seedResult = await t.mutation(internal.ads.seed.seedMvpData, {});
     expect(seedResult).toEqual({
       seeded: true,
       primaryEpisodeSlug: "episode-001",
@@ -36,7 +35,7 @@ describe("ads backend", () => {
   it("creates, updates, validates, and deletes markers", async () => {
     const t = convexTest(schema, modules);
 
-    await t.mutation(api.ads.seedMvpData, {});
+    await t.mutation(internal.ads.seed.seedMvpData, {});
 
     const initialData = await t.query(api.ads.getEpisodeEditorData, {
       episodeSlug: "episode-001",

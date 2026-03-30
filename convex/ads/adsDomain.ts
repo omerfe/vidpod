@@ -4,7 +4,7 @@ import type {
   AssignmentRole,
   MarkerMutationSummary,
   MarkerType,
-} from "./contracts";
+} from "../lib/contracts";
 
 export const primaryEpisodeSlug = "episode-001";
 

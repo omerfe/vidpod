@@ -9,7 +9,11 @@
  */
 
 import type * as ads from "../ads.js";
-import type * as lib_adsDomain from "../lib/adsDomain.js";
+import type * as ads_adsDomain from "../ads/adsDomain.js";
+import type * as ads_adsMarkerLifecycle from "../ads/adsMarkerLifecycle.js";
+import type * as ads_adsPersistence from "../ads/adsPersistence.js";
+import type * as ads_adsReadModel from "../ads/adsReadModel.js";
+import type * as ads_seed from "../ads/seed.js";
 import type * as lib_contracts from "../lib/contracts.js";
 import type * as lib_media from "../lib/media.js";
 import type * as lib_validators from "../lib/validators.js";
@@ -22,7 +26,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   ads: typeof ads;
-  "lib/adsDomain": typeof lib_adsDomain;
+  "ads/adsDomain": typeof ads_adsDomain;
+  "ads/adsMarkerLifecycle": typeof ads_adsMarkerLifecycle;
+  "ads/adsPersistence": typeof ads_adsPersistence;
+  "ads/adsReadModel": typeof ads_adsReadModel;
+  "ads/seed": typeof ads_seed;
   "lib/contracts": typeof lib_contracts;
   "lib/media": typeof lib_media;
   "lib/validators": typeof lib_validators;
