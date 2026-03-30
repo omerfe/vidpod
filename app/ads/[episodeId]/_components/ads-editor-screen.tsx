@@ -1,8 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,61 +8,58 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/convex/_generated/api";
 import { EpisodeHeader } from "./episode-header";
+import { EpisodeWorkspaceSwitcher } from "./episode-workspace-switcher";
 import { MarkerPanelSlot } from "./marker-panel";
 import { PlayerPanelSlot } from "./player-panel";
 import { TimelinePanelSlot } from "./timeline-panel";
+import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
 
 export function AdsEditorScreen({ episodeSlug }: { episodeSlug: string }) {
-  const editorData = useQuery(api.ads.getEpisodeEditorData, {
-    episodeSlug,
-  });
-  const episodes = useQuery(api.ads.listEpisodes, {});
+  const session = useAdsWorkspaceSession(episodeSlug);
 
-  if (editorData === undefined || episodes === undefined) {
+  if (session.status === "loading") {
     return <LoadingState />;
   }
 
-  if (editorData === null) {
-    if (episodes.length === 0) {
-      return (
-        <StateCard
-          title="No episodes available"
-          description="No episodes are currently available in Convex for the ads editor."
-        />
-      );
-    }
+  if (session.status === "no-episodes") {
+    return (
+      <StateCard
+        title="No episodes available"
+        description="No episodes are currently available in Convex for the ads editor."
+      />
+    );
+  }
 
+  if (session.status === "missing-episode") {
     return (
       <StateCard
         title="Episode not found"
         description={`The slug "${episodeSlug}" does not match any available episode.`}
       >
-        <div className="flex flex-wrap gap-2">
-          {episodes.map((episode) => (
-            <Button asChild key={episode.slug} variant="outline">
-              <Link href={`/ads/${episode.slug}`}>{episode.title}</Link>
-            </Button>
-          ))}
-        </div>
+        <EpisodeWorkspaceSwitcher
+          currentEpisodeSlug={episodeSlug}
+          episodes={session.episodes}
+        />
       </StateCard>
     );
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      <div className="px-8 pt-6 pb-4">
-        <div className="mb-4">
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/">Ads</Link>
-          </Button>
-        </div>
+  const { editorData } = session;
 
+  return (
+    <div className="flex h-full flex-col">
+      <div className="px-8 pt-6 pb-4">
+        <Link
+          href="/"
+          className="mb-4 inline-flex text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {"<"} Ads
+        </Link>
         <EpisodeHeader episode={editorData.episode} stats={editorData.stats} />
       </div>
 
-      <div className="flex-1 min-h-0 px-8 pb-4 grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 h-full">
+      <div className="grid h-full min-h-0 flex-1 grid-cols-1 gap-6 px-8 pb-4 lg:grid-cols-[1fr_2fr]">
         <MarkerPanelSlot markers={editorData.markers} />
         <PlayerPanelSlot
           episode={editorData.episode}

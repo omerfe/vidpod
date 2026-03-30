@@ -1,17 +1,19 @@
 import path from "node:path";
-import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+import { defineConfig, defineProject } from "vitest/config";
 
+const rootDirectory = fileURLToPath(new URL(".", import.meta.url));
 const alias = {
-  "@": path.resolve(__dirname, "."),
+  "@": path.resolve(rootDirectory),
 };
 
 export default defineConfig({
-  resolve: {
-    alias,
-  },
   test: {
     projects: [
-      {
+      defineProject({
+        resolve: {
+          alias,
+        },
         test: {
           name: "frontend",
           environment: "jsdom",
@@ -23,15 +25,15 @@ export default defineConfig({
           ],
           setupFiles: ["./vitest.setup.ts"],
         },
-      },
-      {
+      }),
+      defineProject({
         test: {
           name: "convex",
           environment: "edge-runtime",
           globals: true,
           include: ["convex/**/*.test.ts"],
         },
-      },
+      }),
     ],
   },
 });

@@ -1,9 +1,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import type { EditorEpisode, EditorMarker } from "@/convex/lib/contracts";
 import { formatTimecode, markerTypeLabel } from "./ads-editor-utils";
@@ -22,15 +19,7 @@ export function TimelinePanelSlot({
       data-slot="timeline-panel"
       className="border-0 ring-1 ring-foreground/10 lg:col-span-2"
     >
-      <CardHeader>
-        <CardTitle>Timeline baseline</CardTitle>
-        <CardDescription>
-          Persisted marker coordinates share one time axis and stay normalized
-          in Convex.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4">
         <div className="relative h-20 rounded-lg border border-border/60 bg-background/60">
           <div className="absolute inset-x-4 top-1/2 h-1 -translate-y-1/2 rounded-full bg-muted" />
 

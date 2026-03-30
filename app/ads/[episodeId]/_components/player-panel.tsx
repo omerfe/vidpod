@@ -2,9 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import type { EditorEpisode, EditorMarker } from "@/convex/lib/contracts";
 import { formatTimecode } from "./ads-editor-utils";
@@ -20,15 +17,7 @@ export function PlayerPanelSlot({ episode, markers }: PlayerPanelSlotProps) {
       data-slot="player-panel"
       className="min-h-[40svh] border-0 ring-1 ring-foreground/10"
     >
-      <CardHeader>
-        <CardTitle>Playback preview</CardTitle>
-        <CardDescription>
-          Episode media resolves through the backend media seam, so this player
-          can swap from local `public/` assets to R2/CDN later.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 p-4">
         <video
           className="aspect-video w-full rounded-lg border border-border/60 bg-black"
           controls

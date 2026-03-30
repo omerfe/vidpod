@@ -22,9 +22,6 @@ export function EpisodeHeader({ episode, stats }: EpisodeHeaderProps) {
         <h1 className="text-2xl font-bold tracking-tight leading-tight">
           {episode.title}
         </h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          {episode.description}
-        </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

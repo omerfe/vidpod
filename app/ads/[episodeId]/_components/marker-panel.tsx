@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,15 +14,20 @@ export function MarkerPanelSlot({ markers }: { markers: EditorMarker[] }) {
       data-slot="marker-panel"
       className="min-h-[40svh] border-0 ring-1 ring-foreground/10"
     >
-      <CardHeader>
-        <CardTitle>Markers</CardTitle>
-        <CardDescription>
-          Persisted inserts, assignments, and experiment metadata for this
-          episode.
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+        <CardTitle>Ad markers</CardTitle>
+        <div className="text-sm text-muted-foreground">
+          {markers.length} {markers.length === 1 ? "marker" : "markers"}
+        </div>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-3">
+        {markers.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border/60 bg-background/60 p-4 text-sm text-muted-foreground">
+            No markers yet. This episode is ready for the first ad insert.
+          </div>
+        ) : null}
+
         {markers.map((marker) => (
           <div
             key={marker.id}
