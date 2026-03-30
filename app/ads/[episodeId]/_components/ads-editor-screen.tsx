@@ -15,7 +15,7 @@ import { EpisodeHeader } from "./episode-header";
 import { EpisodeWorkspaceSwitcher } from "./episode-workspace-switcher";
 import { MarkerPanelSlot } from "./marker/marker-panel";
 import { PlayerPanelSlot } from "./player-panel";
-import { TimelinePanelSlot } from "./timeline-panel";
+import { TimelinePanelSlot } from "./timeline/timeline-panel";
 
 export function AdsEditorScreen({ episodeSlug }: { episodeSlug: string }) {
   const session = useAdsWorkspaceSession(episodeSlug);
