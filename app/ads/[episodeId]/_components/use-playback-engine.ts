@@ -123,15 +123,12 @@ export function usePlaybackEngine(episodeDurationMs: number): PlaybackEngine {
   }, []);
 
   const onLoadedMetadata: React.ReactEventHandler<HTMLVideoElement> =
-    useCallback(
-      (e) => {
-        const videoDuration = secondsToMs(e.currentTarget.duration);
-        if (videoDuration > 0 && Number.isFinite(videoDuration)) {
-          setDurationMs(videoDuration);
-        }
-      },
-      [],
-    );
+    useCallback((e) => {
+      const videoDuration = secondsToMs(e.currentTarget.duration);
+      if (videoDuration > 0 && Number.isFinite(videoDuration)) {
+        setDurationMs(videoDuration);
+      }
+    }, []);
 
   const onEnded: React.ReactEventHandler<HTMLVideoElement> = useCallback(() => {
     setIsPlaying(false);

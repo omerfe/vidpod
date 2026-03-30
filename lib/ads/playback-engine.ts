@@ -29,7 +29,10 @@ export function secondsToMs(s: number): number {
   return Math.round(s * 1000);
 }
 
-export function progressFraction(currentMs: number, durationMs: number): number {
+export function progressFraction(
+  currentMs: number,
+  durationMs: number,
+): number {
   if (durationMs <= 0) return 0;
   return Math.max(0, Math.min(1, currentMs / durationMs));
 }

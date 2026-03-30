@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { EpisodeEditorData, EpisodeListItem } from "@/lib/ads/contracts";
 import { AdsEditorScreen } from "./ads-editor-screen";
 import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
+import type { EditorSession } from "./use-editor-session";
 
 vi.mock("./use-ads-workspace-session", () => ({
   useAdsWorkspaceSession: vi.fn(),
@@ -10,6 +11,22 @@ vi.mock("./use-ads-workspace-session", () => ({
 
 vi.mock("./marker/create-ad-marker-dialog", () => ({
   CreateAdMarkerDialog: () => null,
+}));
+
+vi.mock("./use-editor-session", () => ({
+  useEditorSession: (opts: {
+    serverMarkers: EditorSession["markers"];
+  }): EditorSession => ({
+    markers: opts.serverMarkers,
+    moveMarker: vi.fn(),
+    deleteMarker: vi.fn(),
+    trackCreation: vi.fn(),
+    undo: vi.fn(),
+    redo: vi.fn(),
+    canUndo: false,
+    canRedo: false,
+    isProcessing: false,
+  }),
 }));
 
 const mockedUseAdsWorkspaceSession = vi.mocked(useAdsWorkspaceSession);

@@ -1,6 +1,6 @@
-import type { EditorEpisode } from "@/lib/ads/contracts";
 import { DotIcon } from "lucide-react";
 import Link from "next/link";
+import type { EditorEpisode } from "@/lib/ads/contracts";
 import { formatPublishedAt } from "./ads-editor-utils";
 
 interface EpisodeHeaderProps {

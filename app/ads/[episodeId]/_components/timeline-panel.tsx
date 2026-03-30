@@ -2,11 +2,8 @@
 
 import {
   GripVertical,
-  Redo2,
   RotateCcwIcon,
   RotateCwIcon,
-  Search,
-  Undo2,
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react";
@@ -35,13 +32,35 @@ const WAVEFORM_BAR_COUNT = 300;
 interface TimelinePanelSlotProps {
   markers: EditorMarker[];
   engine: PlaybackEngine;
+  onMoveMarker?: (markerId: string, newStartMs: number) => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
-export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
+export function TimelinePanelSlot({
+  markers,
+  engine,
+  onMoveMarker,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+}: TimelinePanelSlotProps) {
   const { currentTimeMs, durationMs, seek } = engine;
   const [zoom, setZoom] = useState(MIN_ZOOM);
   const trackRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
+  const markerDragRef = useRef<{
+    markerId: string;
+    initialStartMs: number;
+    offsetMs: number;
+  } | null>(null);
+  const [dragOverride, setDragOverride] = useState<{
+    markerId: string;
+    ms: number;
+  } | null>(null);
 
   const vpWidthPct = viewportWidthPercent(zoom);
   const vpStartPct = viewportStartPercent(currentTimeMs, durationMs, zoom);
@@ -56,40 +75,96 @@ export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
     [durationMs, zoom, vpStartPct],
   );
 
-  const seekFromClientX = useCallback(
-    (clientX: number) => {
+  const clientXToMs = useCallback(
+    (clientX: number): number => {
       const track = trackRef.current;
-      if (!track) return;
+      if (!track || durationMs <= 0) return 0;
       const rect = track.getBoundingClientRect();
       const localFraction = clientXToFraction(clientX, rect);
       const globalFraction =
         vpStartPct / 100 + localFraction * (vpWidthPct / 100);
-      const ms = Math.round(globalFraction * durationMs);
+      const ceiling = Math.max(durationMs - 1_000, 0);
+      return Math.max(
+        0,
+        Math.min(Math.round(globalFraction * durationMs), ceiling),
+      );
+    },
+    [vpStartPct, vpWidthPct, durationMs],
+  );
+
+  const seekFromClientX = useCallback(
+    (clientX: number) => {
+      const ms = clientXToMs(clientX);
       seek(ms);
     },
-    [vpStartPct, vpWidthPct, durationMs, seek],
+    [clientXToMs, seek],
   );
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
+      const gripEl = (e.target as HTMLElement).closest(
+        "[data-drag-handle]",
+      ) as HTMLElement | null;
+
+      if (gripEl && onMoveMarker) {
+        const markerId = gripEl.dataset.markerId;
+        if (!markerId) return;
+        const marker = markers.find((m) => m.id === markerId);
+        if (marker) {
+          e.preventDefault();
+          const clickMs = clientXToMs(e.clientX);
+          markerDragRef.current = {
+            markerId,
+            initialStartMs: marker.startMs,
+            offsetMs: clickMs - marker.startMs,
+          };
+          setDragOverride({ markerId, ms: marker.startMs });
+          trackRef.current?.setPointerCapture(e.pointerId);
+          return;
+        }
+      }
+
       isDraggingRef.current = true;
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      trackRef.current?.setPointerCapture(e.pointerId);
       seekFromClientX(e.clientX);
     },
-    [seekFromClientX],
+    [seekFromClientX, markers, onMoveMarker, clientXToMs],
   );
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
+      if (markerDragRef.current) {
+        const rawMs = clientXToMs(e.clientX);
+        const adjusted = Math.max(0, rawMs - markerDragRef.current.offsetMs);
+        setDragOverride({
+          markerId: markerDragRef.current.markerId,
+          ms: adjusted,
+        });
+        return;
+      }
       if (!isDraggingRef.current) return;
       seekFromClientX(e.clientX);
     },
-    [seekFromClientX],
+    [clientXToMs, seekFromClientX],
   );
 
-  const handlePointerUp = useCallback(() => {
-    isDraggingRef.current = false;
-  }, []);
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (markerDragRef.current) {
+        const rawMs = clientXToMs(e.clientX);
+        const adjusted = Math.max(0, rawMs - markerDragRef.current.offsetMs);
+        const { markerId, initialStartMs } = markerDragRef.current;
+        markerDragRef.current = null;
+        setDragOverride(null);
+        if (adjusted !== initialStartMs) {
+          onMoveMarker?.(markerId, adjusted);
+        }
+        return;
+      }
+      isDraggingRef.current = false;
+    },
+    [clientXToMs, onMoveMarker],
+  );
 
   useEffect(() => {
     const el = trackRef.current;
@@ -129,10 +204,18 @@ export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
                 variant="outline"
                 size="sm"
                 className="rounded-full w-5 h-5"
+                disabled={!canUndo}
+                onClick={onUndo}
               >
                 <RotateCcwIcon className="size-3" />
               </Button>
-              Undo
+              <span
+                className={
+                  canUndo ? "text-foreground" : "text-muted-foreground"
+                }
+              >
+                Undo
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <Button
@@ -140,10 +223,18 @@ export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
                 variant="outline"
                 size="sm"
                 className="rounded-full w-5 h-5"
+                disabled={!canRedo}
+                onClick={onRedo}
               >
                 <RotateCwIcon className="size-3" />
               </Button>
-              Redo
+              <span
+                className={
+                  canRedo ? "text-foreground" : "text-muted-foreground"
+                }
+              >
+                Redo
+              </span>
             </div>
           </div>
 
@@ -165,7 +256,7 @@ export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative pt-2.5">
           <div
             ref={trackRef}
             className="relative h-40 cursor-crosshair overflow-hidden rounded-lg border border-foreground/10 bg-fuchsia-200/60 dark:bg-fuchsia-950/40 select-none"
@@ -199,7 +290,15 @@ export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
             </div>
 
             {markers.map((marker) => {
-              const globalPct = msToTimelinePercent(marker.startMs, durationMs);
+              const effectiveStartMs =
+                dragOverride?.markerId === marker.id
+                  ? dragOverride.ms
+                  : marker.startMs;
+
+              const globalPct = msToTimelinePercent(
+                effectiveStartMs,
+                durationMs,
+              );
               const localPct = ((globalPct - vpStartPct) / vpWidthPct) * 100;
 
               const adDurationMs =
@@ -212,53 +311,70 @@ export function TimelinePanelSlot({ markers, engine }: TimelinePanelSlotProps) {
 
               if (localPct < -blockWidthPct || localPct > 105) return null;
 
+              const isDragging = dragOverride?.markerId === marker.id;
+
               return (
                 <div
                   key={marker.id}
-                  className={`absolute top-0 z-10 h-full overflow-hidden border-x ${markerBlockBorderClass(marker.type)}`}
+                  className={`absolute top-0 z-10 h-full overflow-hidden border-x transition-shadow ${
+                    isDragging ? "ring-2 ring-foreground/30 shadow-lg" : ""
+                  } ${markerBlockBorderClass(marker.type)}`}
                   style={{
                     left: `${localPct}%`,
                     width: `${Math.max(blockWidthPct, 2)}%`,
                   }}
                 >
                   <div
-                    className={`absolute inset-0 ${markerBlockBgClass(marker.type)}`}
+                    className={`pointer-events-none absolute inset-0 ${markerBlockBgClass(marker.type)}`}
                   />
 
                   {posterUrl && (
                     <div
-                      className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
+                      className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
                       style={{ backgroundImage: `url(${posterUrl})` }}
                       aria-hidden="true"
                     />
                   )}
 
-                  <div className="relative flex h-full flex-col justify-between p-1">
+                  <div className="pointer-events-none relative flex h-full flex-col justify-between p-1">
                     <span
                       className={`w-fit rounded px-1 py-0.5 text-[10px] font-bold leading-none ${markerBadgeClass(marker.type)}`}
                     >
                       {markerTypeShortLabel(marker.type)}
                     </span>
-                    <GripVertical className="size-3.5 self-center text-foreground/40" />
+                  </div>
+
+                  <div
+                    data-drag-handle
+                    data-marker-id={marker.id}
+                    className={`absolute bottom-0 left-0 right-0 flex h-7 items-center justify-center ${
+                      isDragging ? "cursor-grabbing" : "cursor-grab"
+                    }`}
+                  >
+                    <GripVertical className="size-3.5 text-foreground/40" />
                   </div>
                 </div>
               );
             })}
+          </div>
 
-            {playheadVisible && (
-              <div
-                className="absolute top-0 z-20 h-full"
-                style={{ left: `${playheadPct}%` }}
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2">
-                  <div className="flex flex-col items-center">
-                    <div className="size-3 rounded-full border-2 border-destructive bg-destructive" />
-                    <div className="h-[calc(10rem-12px)] w-0.5 bg-destructive" />
-                  </div>
+          {playheadVisible && (
+            <div
+              className="absolute z-30 pointer-events-none"
+              style={{
+                left: `${playheadPct}%`,
+                top: 0,
+                height: "calc(0.375rem + 10rem)",
+              }}
+            >
+              <div className="absolute top-0 left-1/2 -translate-x-1/2">
+                <div className="flex flex-col items-center">
+                  <div className="size-3.5 rounded-full border-2 border-destructive bg-destructive shadow-sm" />
+                  <div className="h-[calc(10rem-2px)] w-0.5 bg-destructive" />
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div
             className="relative mt-1 h-5 overflow-hidden"

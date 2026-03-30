@@ -1,9 +1,10 @@
+import { PlusIcon, Trash2, WandIcon } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EditorAdAsset, EditorMarker } from "@/lib/ads/contracts";
-import { PlusIcon, Trash2, WandIcon } from "lucide-react";
-import { useState } from "react";
+import type { MarkerSnapshot } from "@/lib/ads/editor-history";
 import { formatTimecodeHMS, markerTypeLabel } from "../ads-editor-utils";
 import { CreateAdMarkerDialog } from "./create-ad-marker-dialog";
 
@@ -13,12 +14,16 @@ export function MarkerPanelSlot({
   adLibrary,
   markers,
   playbackTimeMs,
+  onDeleteMarker,
+  onMarkerCreated,
 }: {
   episodeSlug: string;
   episodeDurationMs: number;
   adLibrary: EditorAdAsset[];
   markers: EditorMarker[];
   playbackTimeMs: number;
+  onDeleteMarker?: (markerId: string) => void;
+  onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -42,7 +47,12 @@ export function MarkerPanelSlot({
         ) : (
           <div className="flex flex-1 flex-col gap-3 max-h-[70%] overflow-y-auto">
             {markers.map((marker, index) => (
-              <MarkerItem key={marker.id} marker={marker} index={index} />
+              <MarkerItem
+                key={marker.id}
+                marker={marker}
+                index={index}
+                onDelete={onDeleteMarker}
+              />
             ))}
           </div>
         )}
@@ -72,6 +82,7 @@ export function MarkerPanelSlot({
         episodeDurationMs={episodeDurationMs}
         adLibrary={adLibrary}
         playbackTimeMs={playbackTimeMs}
+        onMarkerCreated={onMarkerCreated}
       />
     </Card>
   );
@@ -80,9 +91,11 @@ export function MarkerPanelSlot({
 function MarkerItem({
   marker,
   index,
+  onDelete,
 }: {
   marker: EditorMarker;
   index: number;
+  onDelete?: (markerId: string) => void;
 }) {
   return (
     <div className="bg-background flex items-center gap-2">
@@ -108,8 +121,8 @@ function MarkerItem({
             type="button"
             variant="outline"
             size="icon"
-            disabled
-            className="size-7 rounded-md border-destructive/20 bg-destructive/10 text-destructive shadow-none disabled:pointer-events-none disabled:opacity-60"
+            onClick={() => onDelete?.(marker.id)}
+            className="size-7 rounded-md border-destructive/20 bg-destructive/10 text-destructive shadow-none hover:bg-destructive/20"
           >
             <Trash2 className="size-3.5" />
             <span className="sr-only">Delete marker</span>

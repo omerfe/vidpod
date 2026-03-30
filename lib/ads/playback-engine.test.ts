@@ -5,10 +5,10 @@ import {
   isInteractiveElement,
   msToSeconds,
   progressFraction,
+  SKIP_STEP_MS,
   secondsToMs,
   skipBackwardMs,
   skipForwardMs,
-  SKIP_STEP_MS,
 } from "./playback-engine";
 
 describe("clampTimeMs", () => {

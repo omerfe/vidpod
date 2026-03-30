@@ -7,6 +7,7 @@ import {
   type AdMarkerFormValues,
   resolveMarkerStartMs,
 } from "@/lib/ads/create-ad-marker-form";
+import type { MarkerSnapshot } from "@/lib/ads/editor-history";
 import type { AdMarkerCoreFormApi } from "./create-ad-marker-form-api";
 
 export function useCreateAdMarkerSubmit(args: {
@@ -14,6 +15,7 @@ export function useCreateAdMarkerSubmit(args: {
   playbackTimeMs: number;
   episodeDurationMs: number;
   onRequestClose: () => void;
+  onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
   const createMarker = useMutation(api.ads.createMarker);
 
@@ -46,11 +48,19 @@ export function useCreateAdMarkerSubmit(args: {
       >[0]["adAssetIds"];
 
       try {
-        await createMarker({
+        const result = await createMarker({
           episodeSlug: args.episodeSlug,
           markerType: "static",
           startMs,
           adAssetIds,
+        });
+        args.onMarkerCreated?.(result.id, {
+          episodeSlug: args.episodeSlug,
+          markerType: "static",
+          startMs,
+          label: result.label,
+          notes: null,
+          adAssetIds: adAssetIds.map(String),
         });
         args.onRequestClose();
       } catch (caught) {
@@ -63,6 +73,7 @@ export function useCreateAdMarkerSubmit(args: {
       args.episodeSlug,
       args.episodeDurationMs,
       args.onRequestClose,
+      args.onMarkerCreated,
       args.playbackTimeMs,
       createMarker,
     ],

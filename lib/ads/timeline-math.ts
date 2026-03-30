@@ -35,10 +35,7 @@ export function msToTimelinePercent(ms: number, durationMs: number): number {
   return Math.max(0, Math.min(100, (ms / durationMs) * 100));
 }
 
-export function clientXToFraction(
-  clientX: number,
-  trackRect: DOMRect,
-): number {
+export function clientXToFraction(clientX: number, trackRect: DOMRect): number {
   const raw = (clientX - trackRect.left) / trackRect.width;
   return Math.max(0, Math.min(1, raw));
 }
@@ -61,12 +58,16 @@ export function generateTickMarks(
   else intervalS = 60;
 
   const vpStartMs = (viewportStartPct / 100) * durationMs;
-  const vpEndMs = vpStartMs + (durationMs / zoom);
+  const vpEndMs = vpStartMs + durationMs / zoom;
 
-  const startTick = Math.ceil((vpStartMs / 1000) / intervalS) * intervalS;
+  const startTick = Math.ceil(vpStartMs / 1000 / intervalS) * intervalS;
   const ticks: { ms: number; percent: number }[] = [];
 
-  for (let s = startTick; s * 1000 <= vpEndMs && s * 1000 <= durationMs; s += intervalS) {
+  for (
+    let s = startTick;
+    s * 1000 <= vpEndMs && s * 1000 <= durationMs;
+    s += intervalS
+  ) {
     ticks.push({
       ms: s * 1000,
       percent: msToTimelinePercent(s * 1000, durationMs),

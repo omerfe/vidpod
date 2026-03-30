@@ -8,6 +8,8 @@ interface KeyboardShortcutsOptions {
   togglePlay: PlaybackActions["togglePlay"];
   skipForward: PlaybackActions["skipForward"];
   skipBackward: PlaybackActions["skipBackward"];
+  undo?: () => void;
+  redo?: () => void;
   enabled?: boolean;
 }
 
@@ -15,6 +17,8 @@ export function useKeyboardShortcuts({
   togglePlay,
   skipForward,
   skipBackward,
+  undo,
+  redo,
   enabled = true,
 }: KeyboardShortcutsOptions) {
   useEffect(() => {
@@ -22,6 +26,20 @@ export function useKeyboardShortcuts({
 
     function handleKeyDown(e: KeyboardEvent) {
       if (isInteractiveElement(e.target)) return;
+
+      const isModKey = e.metaKey || e.ctrlKey;
+
+      if (isModKey && e.key === "z" && e.shiftKey) {
+        e.preventDefault();
+        redo?.();
+        return;
+      }
+
+      if (isModKey && e.key === "z") {
+        e.preventDefault();
+        undo?.();
+        return;
+      }
 
       switch (e.code) {
         case "Space": {
@@ -44,5 +62,5 @@ export function useKeyboardShortcuts({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [enabled, togglePlay, skipForward, skipBackward]);
+  }, [enabled, togglePlay, skipForward, skipBackward, undo, redo]);
 }

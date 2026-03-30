@@ -146,8 +146,8 @@ describe("generateTickMarks", () => {
     const ticksZoom1 = generateTickMarks(60_000, 1, 0);
     const ticksZoom4 = generateTickMarks(60_000, 4, 0);
     if (ticksZoom1.length >= 2 && ticksZoom4.length >= 2) {
-      const interval1 = ticksZoom1[1]!.ms - ticksZoom1[0]!.ms;
-      const interval4 = ticksZoom4[1]!.ms - ticksZoom4[0]!.ms;
+      const interval1 = ticksZoom1[1]?.ms - ticksZoom1[0]?.ms;
+      const interval4 = ticksZoom4[1]?.ms - ticksZoom4[0]?.ms;
       expect(interval4).toBeLessThanOrEqual(interval1);
     }
   });

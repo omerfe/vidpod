@@ -17,6 +17,7 @@ import {
   createAdMarkerFormDefaultValues,
   resolveMarkerStartMs,
 } from "@/lib/ads/create-ad-marker-form";
+import type { MarkerSnapshot } from "@/lib/ads/editor-history";
 import { useCreateAdMarkerSubmit } from "./create-ad-marker-dialog-submit";
 import { CreateAdMarkerStepMarkerType } from "./create-ad-marker-step-marker-type";
 import { CreateAdMarkerStepStatic } from "./create-ad-marker-step-static";
@@ -28,12 +29,14 @@ export function CreateAdMarkerDialogSession(props: {
   adLibrary: EditorAdAsset[];
   playbackTimeMs: number;
   onRequestClose: () => void;
+  onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
   const { onSubmit } = useCreateAdMarkerSubmit({
     episodeSlug: props.episodeSlug,
     playbackTimeMs: props.playbackTimeMs,
     episodeDurationMs: props.episodeDurationMs,
     onRequestClose: props.onRequestClose,
+    onMarkerCreated: props.onMarkerCreated,
   });
 
   const form = useForm({

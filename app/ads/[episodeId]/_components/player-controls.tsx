@@ -1,7 +1,4 @@
-import { Button } from "@/components/ui/button";
 import {
-  ChevronsLeft,
-  ChevronsRight,
   FastForward,
   HistoryIcon,
   Pause,
@@ -11,6 +8,7 @@ import {
   SkipForward,
 } from "lucide-react";
 import { useCallback } from "react";
+import { Button } from "@/components/ui/button";
 import type { PlaybackEngine } from "./use-playback-engine";
 
 interface PlayerControlsProps {

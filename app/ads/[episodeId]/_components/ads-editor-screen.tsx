@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -14,6 +13,7 @@ import { MarkerPanelSlot } from "./marker/marker-panel";
 import { PlayerPanelSlot } from "./player-panel";
 import { TimelinePanelSlot } from "./timeline-panel";
 import { useAdsWorkspaceSession } from "./use-ads-workspace-session";
+import { useEditorSession } from "./use-editor-session";
 import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
 import { usePlaybackEngine } from "./use-playback-engine";
 
@@ -66,10 +66,17 @@ function ReadyWorkspace({
 }) {
   const engine = usePlaybackEngine(editorData.episode.durationMs);
 
+  const editor = useEditorSession({
+    serverMarkers: editorData.markers,
+    episodeSlug,
+  });
+
   useKeyboardShortcuts({
     togglePlay: engine.togglePlay,
     skipForward: engine.skipForward,
     skipBackward: engine.skipBackward,
+    undo: editor.undo,
+    redo: editor.redo,
   });
 
   return (
@@ -81,11 +88,21 @@ function ReadyWorkspace({
           episodeSlug={episodeSlug}
           episodeDurationMs={editorData.episode.durationMs}
           adLibrary={editorData.adLibrary}
-          markers={editorData.markers}
+          markers={editor.markers}
           playbackTimeMs={engine.currentTimeMs}
+          onDeleteMarker={editor.deleteMarker}
+          onMarkerCreated={editor.trackCreation}
         />
         <PlayerPanelSlot episode={editorData.episode} engine={engine} />
-        <TimelinePanelSlot markers={editorData.markers} engine={engine} />
+        <TimelinePanelSlot
+          markers={editor.markers}
+          engine={engine}
+          onMoveMarker={editor.moveMarker}
+          onUndo={editor.undo}
+          onRedo={editor.redo}
+          canUndo={editor.canUndo}
+          canRedo={editor.canRedo}
+        />
       </div>
     </div>
   );
