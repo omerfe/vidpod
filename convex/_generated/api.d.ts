@@ -8,13 +8,25 @@
  * @module
  */
 
+import type * as ads from "../ads.js";
+import type * as lib_adsDomain from "../lib/adsDomain.js";
+import type * as lib_contracts from "../lib/contracts.js";
+import type * as lib_media from "../lib/media.js";
+import type * as lib_validators from "../lib/validators.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  ads: typeof ads;
+  "lib/adsDomain": typeof lib_adsDomain;
+  "lib/contracts": typeof lib_contracts;
+  "lib/media": typeof lib_media;
+  "lib/validators": typeof lib_validators;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

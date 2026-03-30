@@ -1,14 +1,38 @@
-"use client";
+import { Badge } from "@/components/ui/badge";
+import type { EditorEpisode, EpisodeEditorStats } from "@/convex/lib/contracts";
+import { formatDuration, formatPublishedAt } from "./ads-editor-utils";
 
-export function EpisodeHeader({ episodeId }: { episodeId: string }) {
+interface EpisodeHeaderProps {
+  episode: EditorEpisode;
+  stats: EpisodeEditorStats;
+}
+
+export function EpisodeHeader({ episode, stats }: EpisodeHeaderProps) {
   return (
-    <div>
-      <h1 className="text-2xl font-bold tracking-tight leading-tight">
-        Episode {episodeId}
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Loading episode details...
-      </p>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">Episode {episode.episodeNumber}</Badge>
+        <Badge variant="outline">
+          {formatPublishedAt(episode.publishedAt)}
+        </Badge>
+        <Badge variant="outline">{formatDuration(episode.durationMs)}</Badge>
+      </div>
+
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight leading-tight">
+          {episode.title}
+        </h1>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+          {episode.description}
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <span>{stats.totalMarkers} markers</span>
+        <span>{stats.staticMarkers} static</span>
+        <span>{stats.autoMarkers} auto</span>
+        <span>{stats.abTestMarkers} A/B tests</span>
+      </div>
     </div>
   );
 }
