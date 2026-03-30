@@ -123,4 +123,31 @@ describe("CreateAdMarkerDialog", () => {
       }),
     );
   });
+
+  it("resets to the first step when reopened", () => {
+    const onOpenChange = vi.fn();
+    const props = {
+      onOpenChange,
+      episodeSlug: "episode-001",
+      episodeDurationMs: 18_000,
+      adLibrary: [sampleAsset],
+      playbackTimeMs: 5_200,
+    };
+
+    const { rerender } = render(<CreateAdMarkerDialog open {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Select marker" }));
+    expect(screen.getByLabelText("Search ads")).toBeInTheDocument();
+
+    rerender(<CreateAdMarkerDialog open={false} {...props} />);
+    rerender(<CreateAdMarkerDialog open {...props} />);
+
+    expect(
+      screen.getByText("Insert a new ad marker into this episode"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Select marker" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Search ads")).not.toBeInTheDocument();
+  });
 });

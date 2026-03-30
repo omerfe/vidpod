@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { EpisodeHeader } from "./episode-header";
 import { EpisodeWorkspaceSwitcher } from "./episode-workspace-switcher";
-import { MarkerPanelSlot } from "./marker-panel";
+import { MarkerPanelSlot } from "./marker/marker-panel";
 import { PlayerPanelSlot } from "./player-panel";
 import { TimelinePanelSlot } from "./timeline-panel";
 import { useAdsWorkspaceSession } from "./use-ads-workspace-session";

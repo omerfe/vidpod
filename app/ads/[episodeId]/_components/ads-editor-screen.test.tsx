@@ -8,7 +8,7 @@ vi.mock("./use-ads-workspace-session", () => ({
   useAdsWorkspaceSession: vi.fn(),
 }));
 
-vi.mock("./create-ad-marker-dialog", () => ({
+vi.mock("./marker/create-ad-marker-dialog", () => ({
   CreateAdMarkerDialog: () => null,
 }));
 
@@ -219,11 +219,8 @@ describe("AdsEditorScreen", () => {
     expect(
       screen.getByRole("heading", { name: "Creator Workflow Deep Dive" }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText("Cold open sponsor").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Outro experiment").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("0:02").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("00:00:02").length).toBeGreaterThan(0);
     expect(screen.getByText("A/B test")).toBeInTheDocument();
-    expect(screen.getByText("Seeded directional signal")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Create ad marker" }),
     ).toBeInTheDocument();

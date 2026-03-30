@@ -17,7 +17,7 @@ export function PlayerPanelSlot({
   return (
     <Card
       data-slot="player-panel"
-      className="min-h-[40svh] border-0 ring-1 ring-foreground/10"
+      className="border-0 ring-1 ring-foreground/10"
     >
       <CardContent className="flex flex-col gap-4 p-4">
         <video
