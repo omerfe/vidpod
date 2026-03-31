@@ -1,12 +1,18 @@
 import { PlusIcon, Trash2, WandIcon } from "lucide-react";
+import { useMutation } from "convex/react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { pickRandomAdAsset } from "@/lib/ads/ad-selection-service";
 import type { EditorAdAsset, EditorMarker } from "@/lib/ads/contracts";
 import type { MarkerSnapshot } from "@/lib/ads/editor-history";
 import { formatTimecodeHMS, markerTypeLabel } from "../ads-editor-utils";
 import { CreateAdMarkerDialog } from "./create-ad-marker-dialog";
+import { EditAdMarkerDialog } from "./edit-ad-marker-dialog";
+import { ExperimentResultsDialog } from "./experiment-results-dialog";
 
 export function MarkerPanelSlot({
   episodeSlug,
@@ -26,6 +32,12 @@ export function MarkerPanelSlot({
   onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [editMarker, setEditMarker] = useState<EditorMarker | null>(null);
+  const [resultsMarker, setResultsMarker] = useState<EditorMarker | null>(
+    null,
+  );
+  const [isAutoPlacing, setIsAutoPlacing] = useState(false);
+  const createMarkerMutation = useMutation(api.ads.createMarker);
 
   return (
     <Card
@@ -51,7 +63,17 @@ export function MarkerPanelSlot({
                 key={marker.id}
                 marker={marker}
                 index={index}
+                onEdit={
+                  marker.type !== "ab_test"
+                    ? () => setEditMarker(marker)
+                    : undefined
+                }
                 onDelete={onDeleteMarker}
+                onViewResults={
+                  marker.type === "ab_test"
+                    ? () => setResultsMarker(marker)
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -69,8 +91,49 @@ export function MarkerPanelSlot({
             Create ad marker
             <PlusIcon className="size-4" />
           </Button>
-          <Button type="button" size="lg" variant="outline" className="w-full">
-            Automatically place
+          <Button
+            type="button"
+            size="lg"
+            variant="outline"
+            className="w-full"
+            disabled={isAutoPlacing || adLibrary.length === 0}
+            onClick={async () => {
+              const adStart = pickRandomAdAsset(adLibrary);
+              const adEnd = pickRandomAdAsset(adLibrary);
+              if (!adStart || !adEnd) return;
+
+              setIsAutoPlacing(true);
+              const startMs = 5_000;
+              const endMs = Math.max(0, episodeDurationMs - 5_000);
+
+              try {
+                const existingStartTimes = new Set(
+                  markers.map((m) => m.startMs),
+                );
+
+                if (!existingStartTimes.has(startMs)) {
+                  await createMarkerMutation({
+                    episodeSlug,
+                    markerType: "auto",
+                    startMs,
+                    adAssetIds: [adStart.id as Id<"adAssets">],
+                  });
+                }
+
+                if (!existingStartTimes.has(endMs) && endMs !== startMs) {
+                  await createMarkerMutation({
+                    episodeSlug,
+                    markerType: "auto",
+                    startMs: endMs,
+                    adAssetIds: [adEnd.id as Id<"adAssets">],
+                  });
+                }
+              } finally {
+                setIsAutoPlacing(false);
+              }
+            }}
+          >
+            {isAutoPlacing ? "Placing…" : "Automatically place"}
             <WandIcon className="size-4" />
           </Button>
         </div>
@@ -84,6 +147,28 @@ export function MarkerPanelSlot({
         playbackTimeMs={playbackTimeMs}
         onMarkerCreated={onMarkerCreated}
       />
+      {editMarker ? (
+        <EditAdMarkerDialog
+          open
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) setEditMarker(null);
+          }}
+          marker={editMarker}
+          episodeDurationMs={episodeDurationMs}
+          adLibrary={adLibrary}
+          playbackTimeMs={playbackTimeMs}
+        />
+      ) : null}
+      {resultsMarker ? (
+        <ExperimentResultsDialog
+          open
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) setResultsMarker(null);
+          }}
+          marker={resultsMarker}
+          adLibrary={adLibrary}
+        />
+      ) : null}
     </Card>
   );
 }
@@ -91,11 +176,15 @@ export function MarkerPanelSlot({
 function MarkerItem({
   marker,
   index,
+  onEdit,
   onDelete,
+  onViewResults,
 }: {
   marker: EditorMarker;
   index: number;
+  onEdit?: () => void;
   onDelete?: (markerId: string) => void;
+  onViewResults?: () => void;
 }) {
   return (
     <div className="bg-background flex items-center gap-2">
@@ -110,13 +199,26 @@ function MarkerItem({
           {markerTypeLabel(marker.type)}
         </Badge>
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="font-medium text-foreground disabled:opacity-60"
-          >
-            Edit
-          </Button>
+          {onViewResults ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="font-medium text-foreground"
+              onClick={onViewResults}
+            >
+              Results
+            </Button>
+          ) : null}
+          {onEdit ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="font-medium text-foreground"
+              onClick={onEdit}
+            >
+              Edit
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="outline"

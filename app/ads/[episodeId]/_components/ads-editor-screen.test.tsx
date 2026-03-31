@@ -5,6 +5,10 @@ import type { EditorSession } from "@/hooks/use-editor-session";
 import type { EpisodeEditorData, EpisodeListItem } from "@/lib/ads/contracts";
 import { AdsEditorScreen } from "./ads-editor-screen";
 
+vi.mock("convex/react", () => ({
+  useMutation: () => vi.fn(),
+}));
+
 vi.mock("@/hooks/use-ads-workspace-session", () => ({
   useAdsWorkspaceSession: vi.fn(),
 }));
