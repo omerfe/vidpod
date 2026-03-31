@@ -34,6 +34,7 @@ export async function createMarker(
   const startMs = normalizeMarkerStartMs(args.startMs, episode.durationMs);
   const adAssetIds = validateAssignmentIds(args.markerType, args.adAssetIds);
   await requireAdAssets(ctx, adAssetIds);
+  const label = normalizeLabel(args.markerType, args.label);
 
   const siblings = await ctx.db
     .query("adMarkers")
@@ -52,7 +53,7 @@ export async function createMarker(
 
   const markerId = await ctx.db.insert("adMarkers", {
     episodeId: episode._id,
-    label: normalizeLabel(args.markerType, args.label),
+    label,
     markerType: args.markerType,
     startMs,
     notes: args.notes?.trim() || undefined,
@@ -66,16 +67,18 @@ export async function createMarker(
     adAssetIds,
   });
 
-  if (args.markerType === "ab_test") {
-    await upsertExperimentSummary(ctx, markerId, adAssetIds);
-  }
+  const experimentSummary =
+    args.markerType === "ab_test"
+      ? await upsertExperimentSummary(ctx, markerId, adAssetIds)
+      : null;
 
   return toMarkerSummary({
     id: markerId,
-    label: normalizeLabel(args.markerType, args.label),
+    label,
     type: args.markerType,
     startMs,
     assignmentCount: adAssetIds.length,
+    experimentSummary,
   });
 }
 
@@ -153,8 +156,14 @@ export async function updateMarker(
     adAssetIds: nextAssetIds,
   });
 
+  let experimentSummary = null;
+
   if (nextType === "ab_test") {
-    await upsertExperimentSummary(ctx, marker._id, nextAssetIds);
+    experimentSummary = await upsertExperimentSummary(
+      ctx,
+      marker._id,
+      nextAssetIds,
+    );
   } else {
     await deleteExperimentSummary(ctx, marker._id);
   }
@@ -165,6 +174,7 @@ export async function updateMarker(
     type: nextType,
     startMs: nextStartMs,
     assignmentCount: nextAssetIds.length,
+    experimentSummary,
   });
 }
 

@@ -110,4 +110,5 @@ export type MarkerMutationSummary = {
   type: MarkerType;
   startMs: number;
   assignmentCount: number;
+  experimentSummary: ExperimentSummary | null;
 };

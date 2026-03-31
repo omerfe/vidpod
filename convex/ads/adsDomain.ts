@@ -3,6 +3,7 @@ import { normalizeMarkerStartMs } from "../../lib/ads/marker";
 import type { Doc } from "../_generated/dataModel";
 import type {
   AssignmentRole,
+  ExperimentSummary,
   MarkerMutationSummary,
   MarkerType,
 } from "../lib/contracts";
@@ -152,6 +153,7 @@ export function toMarkerSummary(args: {
   type: MarkerType;
   startMs: number;
   assignmentCount: number;
+  experimentSummary: ExperimentSummary | null;
 }): MarkerMutationSummary {
   return args;
 }

@@ -57,6 +57,30 @@ function makeAutoMarker(
   };
 }
 
+function makeAbTestMarker(
+  id: string,
+  startMs: number,
+  variantAds: EditorAdAsset[],
+): EditorMarker {
+  return {
+    id,
+    label: "A/B marker",
+    type: "ab_test",
+    startMs,
+    notes: null,
+    assignments: variantAds.map((ad, i) => ({
+      id: `assignment-${id}-${i}`,
+      adAssetId: ad.id,
+      role: "ab_variant" as const,
+      sortOrder: i,
+      variantKey: String.fromCharCode(65 + i),
+      variantLabel: `Variant ${String.fromCharCode(65 + i)}`,
+      adAsset: ad,
+    })),
+    experimentSummary: null,
+  };
+}
+
 describe("resolveAutoMarker", () => {
   const adA = makeAdAsset({ id: "ad-a", name: "Ad A" });
   const adB = makeAdAsset({ id: "ad-b", name: "Ad B" });
@@ -141,6 +165,14 @@ describe("buildPreviewResolutions", () => {
     const autoMarker = makeAutoMarker("auto-1", 8000, [adA, adB]);
     const resolutions = buildPreviewResolutions([autoMarker], "seed-123");
     const resolution = resolutions.get("auto-1");
+    expect(resolution).toBeDefined();
+    expect(["ad-a", "ad-b"]).toContain(resolution?.resolvedAd.id);
+  });
+
+  it("resolves A/B test markers to one configured variant", () => {
+    const abMarker = makeAbTestMarker("ab-1", 9000, [adA, adB]);
+    const resolutions = buildPreviewResolutions([abMarker], "seed-123");
+    const resolution = resolutions.get("ab-1");
     expect(resolution).toBeDefined();
     expect(["ad-a", "ad-b"]).toContain(resolution?.resolvedAd.id);
   });

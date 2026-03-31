@@ -120,4 +120,5 @@ export const markerMutationSummaryValidator = v.object({
   type: markerTypeValidator,
   startMs: v.number(),
   assignmentCount: v.number(),
+  experimentSummary: v.union(experimentSummaryValidator, v.null()),
 });

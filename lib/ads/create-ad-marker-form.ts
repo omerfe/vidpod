@@ -26,7 +26,7 @@ export function resolveMarkerStartMs(args: {
 
 export const adMarkerFormSchema = z
   .object({
-    step: z.union([z.literal(1), z.literal(2)]),
+    step: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     markerType: z.enum(markerTypeValues),
     placement: z.enum(placementModeValues),
     customSeconds: z.string(),
@@ -65,6 +65,14 @@ export const adMarkerFormSchema = z
         path: ["selectedAssetIds"],
       });
     }
+
+    if (data.markerType === "ab_test" && data.selectedAssetIds.length < 2) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Select at least two ad variants.",
+        path: ["selectedAssetIds"],
+      });
+    }
   });
 
 export type AdMarkerFormValues = z.infer<typeof adMarkerFormSchema>;
@@ -72,7 +80,7 @@ export type AdMarkerFormValues = z.infer<typeof adMarkerFormSchema>;
 export function createAdMarkerFormDefaultValues(): AdMarkerFormValues {
   return {
     step: 1,
-    markerType: "static",
+    markerType: "auto",
     placement: "playhead",
     customSeconds: "",
     selectedAssetId: null,

@@ -79,6 +79,7 @@ describe("ads backend", () => {
 
     expect(createdMarker.assignmentCount).toBe(1);
     expect(createdMarker.type).toBe("static");
+    expect(createdMarker.experimentSummary).toBeNull();
 
     await expect(
       t.mutation(api.ads.updateMarker, {
@@ -97,6 +98,7 @@ describe("ads backend", () => {
 
     expect(updatedMarker.type).toBe("auto");
     expect(updatedMarker.assignmentCount).toBe(2);
+    expect(updatedMarker.experimentSummary).toBeNull();
 
     await t.mutation(api.ads.deleteMarker, {
       markerId: createdMarker.id as Id<"adMarkers">,
@@ -135,6 +137,7 @@ describe("ads backend", () => {
 
     expect(result.type).toBe("auto");
     expect(result.assignmentCount).toBe(2);
+    expect(result.experimentSummary).toBeNull();
 
     const updatedData = await t.query(api.ads.getEpisodeEditorData, {
       episodeSlug: "episode-001",
@@ -190,5 +193,48 @@ describe("ads backend", () => {
     const marker = reloaded?.markers.find((m) => m.id === autoResult.id);
     expect(marker?.assignments).toHaveLength(allAssets.length);
     expect(marker?.experimentSummary).toBeNull();
+  });
+
+  it("persists A/B test markers with variant assignments and summary data", async () => {
+    const t = convexTest(schema, modules);
+
+    await t.mutation(internal.ads.seed.seedMvpData, {});
+
+    const editorData = await t.query(api.ads.getEpisodeEditorData, {
+      episodeSlug: "episode-001",
+    });
+
+    if (!editorData) {
+      throw new Error("Expected seeded data");
+    }
+
+    const [assetA, assetB] = editorData.adLibrary;
+    if (!assetA || !assetB) {
+      throw new Error("Expected seeded ad assets");
+    }
+
+    const result = await t.mutation(api.ads.createMarker, {
+      episodeSlug: "episode-001",
+      markerType: "ab_test",
+      startMs: 16_000,
+      adAssetIds: [assetA.id as Id<"adAssets">, assetB.id as Id<"adAssets">],
+    });
+
+    expect(result.experimentSummary?.variants).toHaveLength(2);
+    const reloaded = await t.query(api.ads.getEpisodeEditorData, {
+      episodeSlug: "episode-001",
+    });
+
+    const marker = reloaded?.markers.find((m) => m.id === result.id);
+    expect(marker?.type).toBe("ab_test");
+    expect(marker?.assignments).toHaveLength(2);
+    expect(marker?.assignments.map((assignment) => assignment.role)).toEqual([
+      "ab_variant",
+      "ab_variant",
+    ]);
+    expect(
+      marker?.assignments.map((assignment) => assignment.variantKey),
+    ).toEqual(["A", "B"]);
+    expect(marker?.experimentSummary?.variants).toHaveLength(2);
   });
 });

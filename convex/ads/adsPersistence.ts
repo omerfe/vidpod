@@ -1,7 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import type { MarkerType } from "../lib/contracts";
+import type { ExperimentSummary, MarkerType } from "../lib/contracts";
 import { getAssignmentRole, getVariantKey, getVariantLabel } from "./adsDomain";
 
 export async function requireEpisodeBySlug(
@@ -114,10 +114,11 @@ export async function upsertExperimentSummary(
   ctx: MutationCtx,
   markerId: Id<"adMarkers">,
   adAssetIds: Id<"adAssets">[],
-) {
+): Promise<ExperimentSummary> {
   await deleteExperimentSummary(ctx, markerId);
 
   const adAssets = await requireAdAssets(ctx, adAssetIds);
+  const updatedAt = Date.now();
   const variants = adAssets.map((adAsset, index) => {
     const impressions = 120 + index * 30;
     const completions = 74 + index * 18;
@@ -130,11 +131,19 @@ export async function upsertExperimentSummary(
     };
   });
 
-  await ctx.db.insert("experimentSummaries", {
+  const summaryId = await ctx.db.insert("experimentSummaries", {
     markerId,
     confidenceLabel: "Seeded directional signal",
     winningAdAssetId: variants[0]?.adAssetId,
-    updatedAt: Date.now(),
+    updatedAt,
     variants,
   });
+
+  return {
+    id: summaryId,
+    confidenceLabel: "Seeded directional signal",
+    winningAdAssetId: variants[0]?.adAssetId ?? null,
+    updatedAt,
+    variants,
+  };
 }
