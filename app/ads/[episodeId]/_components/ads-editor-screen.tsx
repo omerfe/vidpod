@@ -7,10 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAdsWorkspaceSession } from "../../../../hooks/use-ads-workspace-session";
-import { useEditorSession } from "../../../../hooks/use-editor-session";
-import { useKeyboardShortcuts } from "../../../../hooks/use-keyboard-shortcuts";
-import { usePlaybackEngine } from "../../../../hooks/use-playback-engine";
+import { useAdPreviewPlayback } from "@/hooks/use-ad-preview-playback";
+import { useAdsWorkspaceSession } from "@/hooks/use-ads-workspace-session";
+import { useEditorSession } from "@/hooks/use-editor-session";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { usePlaybackEngine } from "@/hooks/use-playback-engine";
 import { EpisodeHeader } from "./episode-header";
 import { EpisodeWorkspaceSwitcher } from "./episode-workspace-switcher";
 import { MarkerPanelSlot } from "./marker/marker-panel";
@@ -71,6 +72,8 @@ function ReadyWorkspace({
     episodeSlug,
   });
 
+  const adPreview = useAdPreviewPlayback(engine, editor.markers);
+
   useKeyboardShortcuts({
     togglePlay: engine.togglePlay,
     skipForward: engine.skipForward,
@@ -93,10 +96,15 @@ function ReadyWorkspace({
           onDeleteMarker={editor.deleteMarker}
           onMarkerCreated={editor.trackCreation}
         />
-        <PlayerPanelSlot episode={editorData.episode} engine={engine} />
+        <PlayerPanelSlot
+          episode={editorData.episode}
+          engine={engine}
+          adPreview={adPreview}
+        />
         <TimelinePanelSlot
           markers={editor.markers}
           engine={engine}
+          adPreview={adPreview}
           onMoveMarker={editor.moveMarker}
           onUndo={editor.undo}
           onRedo={editor.redo}

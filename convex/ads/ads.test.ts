@@ -110,4 +110,85 @@ describe("ads backend", () => {
       finalData?.markers.find((marker) => marker.id === createdMarker.id),
     ).toBe(undefined);
   });
+
+  it("creates auto markers with candidate assignments", async () => {
+    const t = convexTest(schema, modules);
+
+    await t.mutation(internal.ads.seed.seedMvpData, {});
+
+    const editorData = await t.query(api.ads.getEpisodeEditorData, {
+      episodeSlug: "episode-001",
+    });
+
+    if (!editorData) throw new Error("Expected seeded editor data");
+
+    const [assetA, assetB] = editorData.adLibrary;
+    if (!assetA || !assetB) throw new Error("Expected seeded ad assets");
+
+    const result = await t.mutation(api.ads.createMarker, {
+      episodeSlug: "episode-001",
+      markerType: "auto",
+      startMs: 12_000,
+      label: "Auto mid-roll",
+      adAssetIds: [assetA.id as Id<"adAssets">, assetB.id as Id<"adAssets">],
+    });
+
+    expect(result.type).toBe("auto");
+    expect(result.assignmentCount).toBe(2);
+
+    const updatedData = await t.query(api.ads.getEpisodeEditorData, {
+      episodeSlug: "episode-001",
+    });
+
+    const autoMarker = updatedData?.markers.find((m) => m.id === result.id);
+    expect(autoMarker).toBeDefined();
+    expect(autoMarker?.type).toBe("auto");
+    expect(autoMarker?.assignments).toHaveLength(2);
+    expect(
+      autoMarker?.assignments.every((a) => a.role === "auto_candidate"),
+    ).toBe(true);
+  });
+
+  it("rejects auto markers with zero candidates", async () => {
+    const t = convexTest(schema, modules);
+
+    await t.mutation(internal.ads.seed.seedMvpData, {});
+
+    await expect(
+      t.mutation(api.ads.createMarker, {
+        episodeSlug: "episode-001",
+        markerType: "auto",
+        startMs: 12_000,
+        adAssetIds: [],
+      }),
+    ).rejects.toThrow("Auto markers require at least one candidate ad");
+  });
+
+  it("persists auto markers and reloads them with assignments", async () => {
+    const t = convexTest(schema, modules);
+
+    await t.mutation(internal.ads.seed.seedMvpData, {});
+
+    const editorData = await t.query(api.ads.getEpisodeEditorData, {
+      episodeSlug: "episode-001",
+    });
+
+    if (!editorData) throw new Error("Expected seeded data");
+
+    const allAssets = editorData.adLibrary;
+    const autoResult = await t.mutation(api.ads.createMarker, {
+      episodeSlug: "episode-001",
+      markerType: "auto",
+      startMs: 16_000,
+      adAssetIds: allAssets.map((a) => a.id) as Id<"adAssets">[],
+    });
+
+    const reloaded = await t.query(api.ads.getEpisodeEditorData, {
+      episodeSlug: "episode-001",
+    });
+
+    const marker = reloaded?.markers.find((m) => m.id === autoResult.id);
+    expect(marker?.assignments).toHaveLength(allAssets.length);
+    expect(marker?.experimentSummary).toBeNull();
+  });
 });

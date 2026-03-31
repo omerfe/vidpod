@@ -77,6 +77,121 @@ export function generateTickMarks(
   return ticks;
 }
 
+export type TimelineSegment = {
+  type: "episode" | "ad";
+  startPct: number;
+  widthPct: number;
+  durationMs: number;
+  episodeStartMs: number;
+  episodeEndMs: number;
+  markerId: string | null;
+};
+
+export function buildTimelineSegments(
+  episodeDurationMs: number,
+  markers: {
+    id: string;
+    startMs: number;
+    assignments: { adAsset: { durationMs: number } }[];
+  }[],
+): { segments: TimelineSegment[]; expandedDurationMs: number } {
+  if (episodeDurationMs <= 0) return { segments: [], expandedDurationMs: 0 };
+
+  const sorted = [...markers].sort((a, b) => a.startMs - b.startMs);
+
+  let totalAdDurationMs = 0;
+  for (const m of sorted) {
+    totalAdDurationMs += m.assignments[0]?.adAsset.durationMs ?? 5_000;
+  }
+
+  const expandedDurationMs = episodeDurationMs + totalAdDurationMs;
+  const segments: TimelineSegment[] = [];
+  let episodeCursor = 0;
+  let expandedCursor = 0;
+
+  for (const marker of sorted) {
+    const episodeSegDuration = marker.startMs - episodeCursor;
+    if (episodeSegDuration > 0) {
+      segments.push({
+        type: "episode",
+        startPct: (expandedCursor / expandedDurationMs) * 100,
+        widthPct: (episodeSegDuration / expandedDurationMs) * 100,
+        durationMs: episodeSegDuration,
+        episodeStartMs: episodeCursor,
+        episodeEndMs: marker.startMs,
+        markerId: null,
+      });
+      expandedCursor += episodeSegDuration;
+    }
+
+    const adDuration = marker.assignments[0]?.adAsset.durationMs ?? 5_000;
+    segments.push({
+      type: "ad",
+      startPct: (expandedCursor / expandedDurationMs) * 100,
+      widthPct: (adDuration / expandedDurationMs) * 100,
+      durationMs: adDuration,
+      episodeStartMs: marker.startMs,
+      episodeEndMs: marker.startMs,
+      markerId: marker.id,
+    });
+    expandedCursor += adDuration;
+    episodeCursor = marker.startMs;
+  }
+
+  const remaining = episodeDurationMs - episodeCursor;
+  if (remaining > 0) {
+    segments.push({
+      type: "episode",
+      startPct: (expandedCursor / expandedDurationMs) * 100,
+      widthPct: (remaining / expandedDurationMs) * 100,
+      durationMs: remaining,
+      episodeStartMs: episodeCursor,
+      episodeEndMs: episodeDurationMs,
+      markerId: null,
+    });
+  }
+
+  return { segments, expandedDurationMs };
+}
+
+export function episodeTimeToExpandedPct(
+  timeMs: number,
+  segments: TimelineSegment[],
+): number {
+  for (const seg of segments) {
+    if (
+      seg.type === "episode" &&
+      timeMs >= seg.episodeStartMs &&
+      timeMs <= seg.episodeEndMs
+    ) {
+      const offset = timeMs - seg.episodeStartMs;
+      const fraction = seg.durationMs > 0 ? offset / seg.durationMs : 0;
+      return seg.startPct + fraction * seg.widthPct;
+    }
+  }
+  return 100;
+}
+
+export function expandedFractionToEpisodeMs(
+  fraction: number,
+  segments: TimelineSegment[],
+  episodeDurationMs: number,
+): number {
+  const pct = fraction * 100;
+  for (const seg of segments) {
+    const segEndPct = seg.startPct + seg.widthPct;
+    if (pct <= segEndPct + 0.001) {
+      const segFraction =
+        seg.widthPct > 0 ? (pct - seg.startPct) / seg.widthPct : 0;
+      if (seg.type === "episode") {
+        return Math.round(seg.episodeStartMs + segFraction * seg.durationMs);
+      }
+      return seg.episodeStartMs;
+    }
+  }
+  return episodeDurationMs;
+}
+
 export function generateWaveformBars(count: number, seed = 42): number[] {
   const bars: number[] = [];
   let s = seed;

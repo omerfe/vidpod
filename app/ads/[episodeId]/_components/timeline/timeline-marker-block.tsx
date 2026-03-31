@@ -2,7 +2,6 @@
 
 import { GripVertical } from "lucide-react";
 import type { EditorMarker } from "@/lib/ads/contracts";
-import { msToTimelinePercent } from "@/lib/ads/timeline-math";
 import {
   markerBadgeClass,
   markerBlockBgClass,
@@ -12,42 +11,28 @@ import {
 
 interface TimelineMarkerBlockProps {
   marker: EditorMarker;
-  durationMs: number;
-  vpStartPct: number;
-  vpWidthPct: number;
-  dragOverrideMs: number | null;
+  leftPct: number;
+  widthPct: number;
+  isDragging: boolean;
 }
 
 export function TimelineMarkerBlock({
   marker,
-  durationMs,
-  vpStartPct,
-  vpWidthPct,
-  dragOverrideMs,
+  leftPct,
+  widthPct,
+  isDragging,
 }: TimelineMarkerBlockProps) {
-  const effectiveStartMs = dragOverrideMs ?? marker.startMs;
-
-  const globalPct = msToTimelinePercent(effectiveStartMs, durationMs);
-  const localPct = ((globalPct - vpStartPct) / vpWidthPct) * 100;
-
-  const adDurationMs = marker.assignments[0]?.adAsset.durationMs ?? 5_000;
-  const blockWidthPct =
-    (((adDurationMs / durationMs) * 100) / vpWidthPct) * 100;
-
   const posterUrl = marker.assignments[0]?.adAsset.media.posterUrl ?? null;
-
-  if (localPct < -blockWidthPct || localPct > 105) return null;
-
-  const isDragging = dragOverrideMs !== null;
+  const blockWidthPct = widthPct;
 
   return (
     <div
-      className={`absolute top-0 z-10 h-full overflow-hidden border-x transition-shadow ${
+      className={`absolute inset-y-2 z-1 overflow-hidden rounded-sm transition-shadow ${
         isDragging ? "ring-2 ring-foreground/30 shadow-lg" : ""
       } ${markerBlockBorderClass(marker.type)}`}
       style={{
-        left: `${localPct}%`,
-        width: `${Math.max(blockWidthPct, 2)}%`,
+        left: `${leftPct}%`,
+        width: `${Math.max(blockWidthPct, 1)}%`,
       }}
     >
       <div
@@ -73,7 +58,7 @@ export function TimelineMarkerBlock({
       <div
         data-drag-handle
         data-marker-id={marker.id}
-        className={`absolute bottom-0 left-0 right-0 flex h-7 items-center justify-center ${
+        className={`absolute bottom-0 left-0 right-0 z-3 flex h-7 items-center justify-center ${
           isDragging ? "cursor-grabbing" : "cursor-grab"
         }`}
       >

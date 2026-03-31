@@ -19,9 +19,16 @@ import {
 } from "@/lib/ads/create-ad-marker-form";
 import type { MarkerSnapshot } from "@/lib/ads/editor-history";
 import { useCreateAdMarkerSubmit } from "./create-ad-marker-dialog-submit";
+import { CreateAdMarkerStepAuto } from "./create-ad-marker-step-auto";
 import { CreateAdMarkerStepMarkerType } from "./create-ad-marker-step-marker-type";
 import { CreateAdMarkerStepStatic } from "./create-ad-marker-step-static";
 import { CreateAdMarkerStepUnavailable } from "./create-ad-marker-step-unavailable";
+
+const STEP_2_DESCRIPTIONS: Record<string, string> = {
+  static: "Choose placement and select the creative for this static marker.",
+  auto: "Choose placement and select candidate ads for auto resolution.",
+  ab_test: "This marker type is not available in this build yet.",
+};
 
 export function CreateAdMarkerDialogSession(props: {
   episodeSlug: string;
@@ -35,6 +42,7 @@ export function CreateAdMarkerDialogSession(props: {
     episodeSlug: props.episodeSlug,
     playbackTimeMs: props.playbackTimeMs,
     episodeDurationMs: props.episodeDurationMs,
+    adLibrary: props.adLibrary,
     onRequestClose: props.onRequestClose,
     onMarkerCreated: props.onMarkerCreated,
   });
@@ -72,6 +80,9 @@ export function CreateAdMarkerDialogSession(props: {
     (a) => a.id === values.selectedAssetId,
   );
 
+  const isSubmittableType =
+    values.markerType === "static" || values.markerType === "auto";
+
   return (
     <form
       id="ad-marker-form"
@@ -88,9 +99,7 @@ export function CreateAdMarkerDialogSession(props: {
           <DialogDescription className="text-sm text-muted-foreground">
             {values.step === 1
               ? "Insert a new ad marker into this episode"
-              : values.markerType === "static"
-                ? "Choose placement and select the creative for this static marker."
-                : "This marker type is not available in this build yet."}
+              : (STEP_2_DESCRIPTIONS[values.markerType] ?? "")}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,7 +125,18 @@ export function CreateAdMarkerDialogSession(props: {
           />
         ) : null}
 
-        {values.step === 2 && values.markerType !== "static" ? (
+        {values.step === 2 && values.markerType === "auto" ? (
+          <CreateAdMarkerStepAuto
+            form={form}
+            playbackTimeMs={props.playbackTimeMs}
+            resolvedStartMs={resolvedStartMs}
+            filteredAds={filteredAds}
+            selectedAssetIds={values.selectedAssetIds}
+            placementIsCustom={values.placement === "custom"}
+          />
+        ) : null}
+
+        {values.step === 2 && values.markerType === "ab_test" ? (
           <CreateAdMarkerStepUnavailable />
         ) : null}
       </div>
@@ -134,15 +154,26 @@ export function CreateAdMarkerDialogSession(props: {
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              className="flex-1 bg-foreground text-background hover:bg-foreground/90 sm:flex-none"
-              onClick={() => {
-                form.setFieldValue("step", 2);
-              }}
-            >
-              Select marker
-            </Button>
+            {values.markerType === "auto" ? (
+              <Button
+                type="submit"
+                form="ad-marker-form"
+                className="flex-1 bg-foreground text-background hover:bg-foreground/90 sm:flex-none"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating…" : "Create marker"}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                className="flex-1 bg-foreground text-background hover:bg-foreground/90 sm:flex-none"
+                onClick={() => {
+                  form.setFieldValue("step", 2);
+                }}
+              >
+                Select marker
+              </Button>
+            )}
           </>
         ) : (
           <>
@@ -157,7 +188,7 @@ export function CreateAdMarkerDialogSession(props: {
             >
               Back
             </Button>
-            {values.markerType === "static" ? (
+            {isSubmittableType ? (
               <Button
                 type="submit"
                 form="ad-marker-form"

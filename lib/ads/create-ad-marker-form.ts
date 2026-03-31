@@ -31,13 +31,12 @@ export const adMarkerFormSchema = z
     placement: z.enum(placementModeValues),
     customSeconds: z.string(),
     selectedAssetId: z.string().nullable(),
+    selectedAssetIds: z.array(z.string()),
     search: z.string(),
     serverError: z.string(),
   })
   .superRefine((data, ctx) => {
-    if (data.step !== 2 || data.markerType !== "static") {
-      return;
-    }
+    if (data.step !== 2) return;
 
     if (data.placement === "custom") {
       const parsedSeconds = Number.parseFloat(data.customSeconds);
@@ -51,11 +50,19 @@ export const adMarkerFormSchema = z
       }
     }
 
-    if (!data.selectedAssetId) {
+    if (data.markerType === "static" && !data.selectedAssetId) {
       ctx.addIssue({
         code: "custom",
         message: "Select one ad from the library.",
         path: ["selectedAssetId"],
+      });
+    }
+
+    if (data.markerType === "auto" && data.selectedAssetIds.length < 1) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Select at least one candidate ad.",
+        path: ["selectedAssetIds"],
       });
     }
   });
@@ -69,6 +76,7 @@ export function createAdMarkerFormDefaultValues(): AdMarkerFormValues {
     placement: "playhead",
     customSeconds: "",
     selectedAssetId: null,
+    selectedAssetIds: [],
     search: "",
     serverError: "",
   };

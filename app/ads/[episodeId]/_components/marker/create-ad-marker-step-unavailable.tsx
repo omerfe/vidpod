@@ -3,8 +3,8 @@
 export function CreateAdMarkerStepUnavailable() {
   return (
     <p className="text-sm leading-relaxed text-muted-foreground">
-      Automatic and A/B test markers are not available in this build. Choose
-      Static to continue, or go back to pick another type.
+      A/B test markers are not available in this build. Choose Static or Auto to
+      continue, or go back to pick another type.
     </p>
   );
 }

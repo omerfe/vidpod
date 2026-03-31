@@ -3,6 +3,8 @@
 import { useMutation } from "convex/react";
 import { useCallback } from "react";
 import { api } from "@/convex/_generated/api";
+import { pickRandomAdAsset } from "@/lib/ads/ad-selection-service";
+import type { EditorAdAsset, MarkerType } from "@/lib/ads/contracts";
 import {
   type AdMarkerFormValues,
   resolveMarkerStartMs,
@@ -14,6 +16,7 @@ export function useCreateAdMarkerSubmit(args: {
   episodeSlug: string;
   playbackTimeMs: number;
   episodeDurationMs: number;
+  adLibrary: EditorAdAsset[];
   onRequestClose: () => void;
   onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
@@ -27,11 +30,32 @@ export function useCreateAdMarkerSubmit(args: {
       value: AdMarkerFormValues;
       formApi: AdMarkerCoreFormApi;
     }) => {
-      if (
-        value.step !== 2 ||
-        value.markerType !== "static" ||
-        !value.selectedAssetId
-      ) {
+      let markerType: MarkerType;
+      let adAssetIds: Parameters<typeof createMarker>[0]["adAssetIds"];
+
+      if (value.markerType === "static") {
+        if (value.step !== 2) {
+          return;
+        }
+        if (!value.selectedAssetId) return;
+        markerType = "static";
+        adAssetIds = [value.selectedAssetId] as typeof adAssetIds;
+      } else if (value.markerType === "auto") {
+        markerType = "auto";
+        if (value.step === 2 && value.selectedAssetIds.length > 0) {
+          adAssetIds = value.selectedAssetIds as unknown as typeof adAssetIds;
+        } else {
+          const randomAsset = pickRandomAdAsset(args.adLibrary);
+          if (!randomAsset) {
+            formApi.setFieldValue(
+              "serverError",
+              "No ads are available to create an auto marker.",
+            );
+            return;
+          }
+          adAssetIds = [randomAsset.id] as typeof adAssetIds;
+        }
+      } else {
         return;
       }
 
@@ -43,20 +67,17 @@ export function useCreateAdMarkerSubmit(args: {
         playbackTimeMs: args.playbackTimeMs,
         episodeDurationMs: args.episodeDurationMs,
       });
-      const adAssetIds = [value.selectedAssetId] as Parameters<
-        typeof createMarker
-      >[0]["adAssetIds"];
 
       try {
         const result = await createMarker({
           episodeSlug: args.episodeSlug,
-          markerType: "static",
+          markerType,
           startMs,
           adAssetIds,
         });
         args.onMarkerCreated?.(result.id, {
           episodeSlug: args.episodeSlug,
-          markerType: "static",
+          markerType,
           startMs,
           label: result.label,
           notes: null,
@@ -71,6 +92,7 @@ export function useCreateAdMarkerSubmit(args: {
     },
     [
       args.episodeSlug,
+      args.adLibrary,
       args.episodeDurationMs,
       args.onRequestClose,
       args.onMarkerCreated,

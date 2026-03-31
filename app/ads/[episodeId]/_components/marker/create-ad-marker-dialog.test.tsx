@@ -93,6 +93,40 @@ describe("CreateAdMarkerDialog", () => {
     });
   });
 
+  it("submits an auto marker directly from the first step", async () => {
+    const onOpenChange = vi.fn();
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+    render(
+      <CreateAdMarkerDialog
+        open
+        onOpenChange={onOpenChange}
+        episodeSlug="episode-001"
+        episodeDurationMs={18_000}
+        adLibrary={[sampleAsset]}
+        playbackTimeMs={5_200}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("radio", { name: /Auto/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Create marker" }));
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+    });
+    expect(mockMutate).toHaveBeenCalledWith({
+      episodeSlug: "episode-001",
+      markerType: "auto",
+      startMs: 5200,
+      adAssetIds: ["ad-asset-1"],
+    });
+    await waitFor(() => {
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    randomSpy.mockRestore();
+  });
+
   it("uses custom seconds when that placement option is selected", async () => {
     render(
       <CreateAdMarkerDialog
