@@ -169,11 +169,7 @@ describe("rankVariants", () => {
     };
 
     const ranked = rankVariants(threeSummary, [adA, adB, adC]);
-    expect(ranked.map((v) => v.adAssetId)).toEqual([
-      "ad-c",
-      "ad-b",
-      "ad-a",
-    ]);
+    expect(ranked.map((v) => v.adAssetId)).toEqual(["ad-c", "ad-b", "ad-a"]);
     expect(ranked[0]?.isWinner).toBe(true);
   });
 });

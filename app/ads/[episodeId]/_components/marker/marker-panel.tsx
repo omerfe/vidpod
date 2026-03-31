@@ -1,5 +1,5 @@
-import { PlusIcon, Trash2, WandIcon } from "lucide-react";
 import { useMutation } from "convex/react";
+import { PlusIcon, Trash2, WandIcon } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,9 +33,7 @@ export function MarkerPanelSlot({
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editMarker, setEditMarker] = useState<EditorMarker | null>(null);
-  const [resultsMarker, setResultsMarker] = useState<EditorMarker | null>(
-    null,
-  );
+  const [resultsMarker, setResultsMarker] = useState<EditorMarker | null>(null);
   const [isAutoPlacing, setIsAutoPlacing] = useState(false);
   const createMarkerMutation = useMutation(api.ads.createMarker);
 

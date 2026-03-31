@@ -35,9 +35,7 @@ const EDIT_DESCRIPTIONS: Record<string, string> = {
 function buildEditDefaults(marker: EditorMarker): AdMarkerFormValues {
   const startSeconds = marker.startMs / 1000;
 
-  const staticAssignment = marker.assignments.find(
-    (a) => a.role === "static",
-  );
+  const staticAssignment = marker.assignments.find((a) => a.role === "static");
 
   return {
     step: 2,
@@ -71,9 +69,7 @@ export function EditAdMarkerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={
-          marker.type === "ab_test" ? "sm:max-w-4xl" : "sm:max-w-4xl"
-        }
+        className={marker.type === "ab_test" ? "sm:max-w-4xl" : "sm:max-w-4xl"}
       >
         {open ? (
           <EditAdMarkerDialogSession
@@ -129,8 +125,7 @@ function EditAdMarkerDialogSession({
         if (!value.selectedAssetId) return;
         adAssetIds = [value.selectedAssetId] as unknown as Id<"adAssets">[];
       } else {
-        adAssetIds =
-          value.selectedAssetIds as unknown as Id<"adAssets">[];
+        adAssetIds = value.selectedAssetIds as unknown as Id<"adAssets">[];
       }
 
       try {
@@ -160,15 +155,18 @@ function EditAdMarkerDialogSession({
       playbackTimeMs,
       episodeDurationMs,
     });
-  }, [values.placement, values.customSeconds, playbackTimeMs, episodeDurationMs]);
+  }, [
+    values.placement,
+    values.customSeconds,
+    playbackTimeMs,
+    episodeDurationMs,
+  ]);
 
   const filteredAds = useMemo(() => {
     return filterAdLibraryBySearch(adLibrary, values.search);
   }, [adLibrary, values.search]);
 
-  const selectedAsset = adLibrary.find(
-    (a) => a.id === values.selectedAssetId,
-  );
+  const selectedAsset = adLibrary.find((a) => a.id === values.selectedAssetId);
 
   const submitDisabled =
     isSubmitting ||

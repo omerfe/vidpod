@@ -169,7 +169,9 @@ describe("ExperimentResultsDialog via MarkerPanel", () => {
     });
 
     expect(screen.getByText("2 variants tested")).toBeInTheDocument();
-    expect(screen.getAllByText("Coffee Break").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Coffee Break").length).toBeGreaterThanOrEqual(
+      1,
+    );
     expect(screen.getByText("Creator Tools")).toBeInTheDocument();
     expect(screen.getByText("Seeded directional signal")).toBeInTheDocument();
   });
@@ -222,9 +224,7 @@ describe("ExperimentResultsDialog via MarkerPanel", () => {
     });
 
     expect(
-      screen.getByText(
-        "No experiment data is available for this marker yet.",
-      ),
+      screen.getByText("No experiment data is available for this marker yet."),
     ).toBeInTheDocument();
   });
 
@@ -247,7 +247,9 @@ describe("ExperimentResultsDialog via MarkerPanel", () => {
       ).toBeInTheDocument();
     });
 
-    expect(screen.getAllByText("Coffee Break").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Coffee Break").length).toBeGreaterThanOrEqual(
+      1,
+    );
     expect(
       screen.getByText((_content, element) => {
         return element?.textContent === "Leading variant: Coffee Break";

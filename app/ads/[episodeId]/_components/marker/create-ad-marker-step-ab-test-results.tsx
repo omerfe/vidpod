@@ -55,9 +55,7 @@ function ExperimentVariantRow({ variant }: { variant: RankedVariant }) {
       </div>
 
       <div className="min-w-0 flex-1 space-y-1.5">
-        <h5 className="font-medium">
-          {variant.asset?.name ?? variant.label}
-        </h5>
+        <h5 className="font-medium">{variant.asset?.name ?? variant.label}</h5>
 
         <div className="flex flex-wrap items-center gap-0.5 text-xs text-muted-foreground">
           <span>{formatDuration(variant.asset?.durationMs ?? 0)}</span>
@@ -66,9 +64,7 @@ function ExperimentVariantRow({ variant }: { variant: RankedVariant }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="outline">
-            {variant.asset?.folder ?? "Unsorted"}
-          </Badge>
+          <Badge variant="outline">{variant.asset?.folder ?? "Unsorted"}</Badge>
           <MoveRightIcon className="size-4" />
           <Badge variant="outline">
             {variant.asset?.campaign ?? "Campaign"}

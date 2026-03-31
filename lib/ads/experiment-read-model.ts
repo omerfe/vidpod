@@ -1,4 +1,8 @@
-import type { EditorAdAsset, EditorMarker, ExperimentSummary } from "./contracts";
+import type {
+  EditorAdAsset,
+  EditorMarker,
+  ExperimentSummary,
+} from "./contracts";
 
 export type RankedVariant = {
   adAssetId: string;
