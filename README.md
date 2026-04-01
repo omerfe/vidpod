@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vidpod
+
+A dynamic ads editor for video podcasts. Podcasters can mark where ads should play in their episodes, choose ad types (static, auto-rotate, or A/B test), and preview the final playback with ad insertions in real time.
+
+**Live demo:** [vidpod-sigma.vercel.app](https://vidpod-sigma.vercel.app/)
+
+## Stack
+
+- **Frontend:** Next.js 16 (App Router), React 19, TailwindCSS 4, shadcn/ui, Motion
+- **Backend:** Convex (real-time queries, mutations, file storage)
+- **Forms:** TanStack Form with Zod validation
+- **Testing:** Vitest, Testing Library, convex-test
+
+## Features
+
+- **Marker CRUD** — Create, edit, delete, and drag ad markers on a visual timeline
+- **Three marker types** — Static (fixed ad), Auto (random from pool), A/B Test (compare variants with experiment results)
+- **Timeline** — Zoomable, scrollable timeline with real audio waveform rendering (Web Audio API peak extraction)
+- **Video playback** — Dual-video player that crossfades between episode content and ad previews at marker positions
+- **Undo / Redo** — Full command-history stack with keyboard shortcuts (Cmd+Z / Cmd+Shift+Z)
+- **Keyboard shortcuts** — Space (play/pause), arrow keys (skip), undo/redo
+- **Uploads** — Upload episode videos and ad creatives directly via Convex file storage
+- **Responsive sidebar** — Navigation shell with hover states
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the Next.js dev server and Convex backend in parallel:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev      # Next.js on localhost:3000
+pnpm dev:db   # Convex dev server
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Seed the database (runs automatically on first `dev:db` start via dashboard, or manually):
 
-## Learn More
+```bash
+npx convex run ads/seed:seedMvpData
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Testing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm test:run          # all tests
+pnpm test:convex       # backend tests only
+pnpm test:frontend     # frontend tests only
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/ads/[episodeId]/   → Ads editor page and feature components
+hooks/                 → Playback engine, editor session, waveform, upload hooks
+lib/ads/               → Domain logic (timeline math, history, ad selection, forms)
+convex/                → Schema, public API, domain modules, seed data
+convex/ads/            → Marker lifecycle, persistence, read model, tests
+components/            → Shared UI (shadcn/ui, shell, sidebar)
+```
