@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AdPreviewPlayback } from "@/hooks/use-ad-preview-playback";
+import { useAudioWaveform } from "@/hooks/use-audio-waveform";
 import type { PlaybackEngine } from "@/hooks/use-playback-engine";
 import type { EditorMarker } from "@/lib/ads/contracts";
 import {
@@ -27,6 +28,7 @@ interface TimelinePanelSlotProps {
   markers: EditorMarker[];
   engine: PlaybackEngine;
   adPreview?: AdPreviewPlayback;
+  videoUrl?: string;
   onMoveMarker?: (markerId: string, newStartMs: number) => void;
   onUndo?: () => void;
   onRedo?: () => void;
@@ -38,6 +40,7 @@ export function TimelinePanelSlot({
   markers,
   engine,
   adPreview,
+  videoUrl,
   onMoveMarker,
   onUndo,
   onRedo,
@@ -67,10 +70,11 @@ export function TimelinePanelSlot({
     [durationMs, markers],
   );
 
-  const waveformBars = useMemo(
-    () => generateWaveformBars(WAVEFORM_BAR_COUNT),
-    [],
-  );
+  const waveformResult = useAudioWaveform(videoUrl, WAVEFORM_BAR_COUNT);
+  const waveformBars = useMemo(() => {
+    if (waveformResult.status === "ready") return waveformResult.peaks;
+    return generateWaveformBars(WAVEFORM_BAR_COUNT);
+  }, [waveformResult]);
 
   const vpStartPctFromScroll = useCallback((): number => {
     const el = scrollRef.current;

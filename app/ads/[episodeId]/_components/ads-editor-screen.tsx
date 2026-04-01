@@ -106,6 +106,7 @@ function ReadyWorkspace({
           markers={editor.markers}
           engine={engine}
           adPreview={adPreview}
+          videoUrl={editorData.episode.media.url}
           onMoveMarker={editor.moveMarker}
           onUndo={editor.undo}
           onRedo={editor.redo}

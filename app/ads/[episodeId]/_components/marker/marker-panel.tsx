@@ -1,4 +1,4 @@
-import { PlusIcon, Trash2, WandIcon } from "lucide-react";
+import { PlusIcon, Trash2, UploadIcon, WandIcon } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { formatTimecodeHMS, markerTypeLabel } from "../ads-editor-utils";
 import { CreateAdMarkerDialog } from "./create-ad-marker-dialog";
 import { EditAdMarkerDialog } from "./edit-ad-marker-dialog";
 import { ExperimentResultsDialog } from "./experiment-results-dialog";
+import { UploadAdDialog } from "./upload-ad-dialog";
 
 export function MarkerPanelSlot({
   episodeSlug,
@@ -32,6 +33,7 @@ export function MarkerPanelSlot({
   onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [uploadAdOpen, setUploadAdOpen] = useState(false);
   const [editMarker, setEditMarker] = useState<EditorMarker | null>(null);
   const [resultsMarker, setResultsMarker] = useState<EditorMarker | null>(null);
   const [isAutoPlacing, setIsAutoPlacing] = useState(false);
@@ -77,6 +79,16 @@ export function MarkerPanelSlot({
         )}
 
         <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => setUploadAdOpen(true)}
+          >
+            <UploadIcon className="size-4" />
+            Upload ad creative
+          </Button>
           <Button
             type="button"
             onClick={() => {
@@ -166,6 +178,7 @@ export function MarkerPanelSlot({
           adLibrary={adLibrary}
         />
       ) : null}
+      <UploadAdDialog open={uploadAdOpen} onOpenChange={setUploadAdOpen} />
     </Card>
   );
 }

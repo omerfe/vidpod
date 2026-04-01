@@ -17,6 +17,7 @@ import type * as ads_seed from "../ads/seed.js";
 import type * as lib_contracts from "../lib/contracts.js";
 import type * as lib_media from "../lib/media.js";
 import type * as lib_validators from "../lib/validators.js";
+import type * as uploads from "../uploads.js";
 
 import type {
   ApiFromModules,
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   "lib/contracts": typeof lib_contracts;
   "lib/media": typeof lib_media;
   "lib/validators": typeof lib_validators;
+  uploads: typeof uploads;
 }>;
 
 /**
