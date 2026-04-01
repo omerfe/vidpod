@@ -57,11 +57,13 @@ export function TimelinePanelSlot({
   const markerDragRef = useRef<{
     markerId: string;
     initialStartMs: number;
-    offsetMs: number;
+    initialClientX: number;
+    initialLeftPct: number;
   } | null>(null);
   const [dragOverride, setDragOverride] = useState<{
     markerId: string;
     ms: number;
+    leftPct: number;
   } | null>(null);
   const [scrubPctOverride, setScrubPctOverride] = useState<number | null>(null);
 
@@ -120,49 +122,77 @@ export function TimelinePanelSlot({
         const marker = markers.find((m) => m.id === markerId);
         if (marker) {
           e.preventDefault();
-          const clickMs = clientXToMs(e.clientX);
+          const adSeg = segments.find(
+            (s) => s.type === "ad" && s.markerId === markerId,
+          );
+          const initialLeftPct = adSeg?.startPct ?? 0;
           markerDragRef.current = {
             markerId,
             initialStartMs: marker.startMs,
-            offsetMs: clickMs - marker.startMs,
+            initialClientX: e.clientX,
+            initialLeftPct,
           };
-          setDragOverride({ markerId, ms: marker.startMs });
+          setDragOverride({
+            markerId,
+            ms: marker.startMs,
+            leftPct: initialLeftPct,
+          });
           trackRef.current?.setPointerCapture(e.pointerId);
           return;
         }
       }
     },
-    [markers, onMoveMarker, clientXToMs],
+    [markers, onMoveMarker, segments],
   );
 
   const handleTrackPointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (markerDragRef.current) {
-        const rawMs = clientXToMs(e.clientX);
-        const adjusted = Math.max(0, rawMs - markerDragRef.current.offsetMs);
+        const content = contentRef.current;
+        if (!content) return;
+        const contentWidth = content.getBoundingClientRect().width;
+        if (contentWidth <= 0) return;
+        const deltaPixels = e.clientX - markerDragRef.current.initialClientX;
+        const msPerPixel = expandedDurationMs / contentWidth;
+        const adjusted = Math.round(
+          Math.max(
+            0,
+            markerDragRef.current.initialStartMs + deltaPixels * msPerPixel,
+          ),
+        );
+        const deltaPct = (deltaPixels / contentWidth) * 100;
         setDragOverride({
           markerId: markerDragRef.current.markerId,
           ms: adjusted,
+          leftPct: markerDragRef.current.initialLeftPct + deltaPct,
         });
       }
     },
-    [clientXToMs],
+    [expandedDurationMs],
   );
 
   const handleTrackPointerUp = useCallback(
     (e: React.PointerEvent) => {
       if (markerDragRef.current) {
-        const rawMs = clientXToMs(e.clientX);
-        const adjusted = Math.max(0, rawMs - markerDragRef.current.offsetMs);
-        const { markerId, initialStartMs } = markerDragRef.current;
+        const content = contentRef.current;
+        const { markerId, initialStartMs, initialClientX } =
+          markerDragRef.current;
         markerDragRef.current = null;
         setDragOverride(null);
+        if (!content) return;
+        const contentWidth = content.getBoundingClientRect().width;
+        if (contentWidth <= 0) return;
+        const deltaPixels = e.clientX - initialClientX;
+        const msPerPixel = expandedDurationMs / contentWidth;
+        const adjusted = Math.round(
+          Math.max(0, initialStartMs + deltaPixels * msPerPixel),
+        );
         if (adjusted !== initialStartMs) {
           onMoveMarker?.(markerId, adjusted);
         }
       }
     },
-    [clientXToMs, onMoveMarker],
+    [expandedDurationMs, onMoveMarker],
   );
 
   const clientXToExpandedPct = useCallback((clientX: number): number => {
@@ -350,10 +380,7 @@ export function TimelinePanelSlot({
                     const widthPct = seg.widthPct;
 
                     if (isDragging && dragOverride) {
-                      leftPct = episodeTimeToExpandedPct(
-                        dragOverride.ms,
-                        segments,
-                      );
+                      leftPct = dragOverride.leftPct;
                     }
 
                     return (
