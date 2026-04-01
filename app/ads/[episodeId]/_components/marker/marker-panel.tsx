@@ -1,11 +1,9 @@
-import { useMutation } from "convex/react";
 import { PlusIcon, Trash2, WandIcon } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { CreateMarkerArgs } from "@/hooks/use-editor-session";
 import { pickRandomAdAsset } from "@/lib/ads/ad-selection-service";
 import type { EditorAdAsset, EditorMarker } from "@/lib/ads/contracts";
 import type { MarkerSnapshot } from "@/lib/ads/editor-history";
@@ -21,6 +19,7 @@ export function MarkerPanelSlot({
   markers,
   playbackTimeMs,
   onDeleteMarker,
+  onCreateMarker,
   onMarkerCreated,
 }: {
   episodeSlug: string;
@@ -29,13 +28,13 @@ export function MarkerPanelSlot({
   markers: EditorMarker[];
   playbackTimeMs: number;
   onDeleteMarker?: (markerId: string) => void;
+  onCreateMarker?: (args: CreateMarkerArgs) => Promise<void>;
   onMarkerCreated?: (markerId: string, snapshot: MarkerSnapshot) => void;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editMarker, setEditMarker] = useState<EditorMarker | null>(null);
   const [resultsMarker, setResultsMarker] = useState<EditorMarker | null>(null);
   const [isAutoPlacing, setIsAutoPlacing] = useState(false);
-  const createMarkerMutation = useMutation(api.ads.createMarker);
 
   return (
     <Card
@@ -94,11 +93,13 @@ export function MarkerPanelSlot({
             size="lg"
             variant="outline"
             className="w-full"
-            disabled={isAutoPlacing || adLibrary.length === 0}
+            disabled={
+              isAutoPlacing || adLibrary.length === 0 || !onCreateMarker
+            }
             onClick={async () => {
               const adStart = pickRandomAdAsset(adLibrary);
               const adEnd = pickRandomAdAsset(adLibrary);
-              if (!adStart || !adEnd) return;
+              if (!adStart || !adEnd || !onCreateMarker) return;
 
               setIsAutoPlacing(true);
               const startMs = 5_000;
@@ -110,20 +111,18 @@ export function MarkerPanelSlot({
                 );
 
                 if (!existingStartTimes.has(startMs)) {
-                  await createMarkerMutation({
-                    episodeSlug,
+                  await onCreateMarker({
                     markerType: "auto",
                     startMs,
-                    adAssetIds: [adStart.id as Id<"adAssets">],
+                    adAssetIds: [adStart.id],
                   });
                 }
 
                 if (!existingStartTimes.has(endMs) && endMs !== startMs) {
-                  await createMarkerMutation({
-                    episodeSlug,
+                  await onCreateMarker({
                     markerType: "auto",
                     startMs: endMs,
-                    adAssetIds: [adEnd.id as Id<"adAssets">],
+                    adAssetIds: [adEnd.id],
                   });
                 }
               } finally {
@@ -236,11 +235,11 @@ function MarkerItem({
 function markerTypeBadgeClassName(type: EditorMarker["type"]) {
   switch (type) {
     case "auto":
-      return "border-transparent bg-emerald-200 text-emerald-700 hover:bg-emerald-150 dark:bg-emerald-950 dark:text-emerald-400";
+      return "border-transparent bg-marker-auto text-marker-auto-foreground";
     case "static":
-      return "border-transparent bg-blue-200 text-blue-700 hover:bg-blue-150 dark:bg-blue-950 dark:text-blue-400";
+      return "border-transparent bg-marker-static text-marker-static-foreground";
     case "ab_test":
-      return "border-transparent bg-amber-200 text-amber-700 hover:bg-amber-150 dark:bg-amber-950 dark:text-amber-400";
+      return "border-transparent bg-marker-ab text-marker-ab-foreground";
     default:
       return "border-border bg-muted text-foreground";
   }

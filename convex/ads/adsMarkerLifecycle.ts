@@ -19,6 +19,26 @@ import {
   upsertExperimentSummary,
 } from "./adsPersistence";
 
+const MAX_MARKERS_PER_EPISODE = 200;
+
+async function assertUniqueStartMs(
+  ctx: MutationCtx,
+  episodeId: Id<"episodes">,
+  candidateStartMs: number,
+  excludeMarkerId?: Id<"adMarkers">,
+) {
+  const siblings = await ctx.db
+    .query("adMarkers")
+    .withIndex("by_episodeId_and_startMs", (q) => q.eq("episodeId", episodeId))
+    .take(MAX_MARKERS_PER_EPISODE);
+
+  assertNoExactStartOverlap({
+    candidateStartMs,
+    existingMarkers: siblings.map((m) => ({ id: m._id, startMs: m.startMs })),
+    excludeMarkerId,
+  });
+}
+
 export async function createMarker(
   ctx: MutationCtx,
   args: {
@@ -36,20 +56,7 @@ export async function createMarker(
   await requireAdAssets(ctx, adAssetIds);
   const label = normalizeLabel(args.markerType, args.label);
 
-  const siblings = await ctx.db
-    .query("adMarkers")
-    .withIndex("by_episodeId_and_startMs", (q) =>
-      q.eq("episodeId", episode._id),
-    )
-    .collect();
-
-  assertNoExactStartOverlap({
-    candidateStartMs: startMs,
-    existingMarkers: siblings.map((marker) => ({
-      id: marker._id,
-      startMs: marker.startMs,
-    })),
-  });
+  await assertUniqueStartMs(ctx, episode._id, startMs);
 
   const markerId = await ctx.db.insert("adMarkers", {
     episodeId: episode._id,
@@ -121,21 +128,8 @@ export async function updateMarker(
     args.startMs ?? marker.startMs,
     episode.durationMs,
   );
-  const siblings = await ctx.db
-    .query("adMarkers")
-    .withIndex("by_episodeId_and_startMs", (q) =>
-      q.eq("episodeId", episode._id),
-    )
-    .collect();
 
-  assertNoExactStartOverlap({
-    candidateStartMs: nextStartMs,
-    existingMarkers: siblings.map((row) => ({
-      id: row._id,
-      startMs: row.startMs,
-    })),
-    excludeMarkerId: marker._id,
-  });
+  await assertUniqueStartMs(ctx, episode._id, nextStartMs, marker._id);
 
   const nextLabel = normalizeLabel(nextType, args.label ?? marker.label);
   const nextNotes =

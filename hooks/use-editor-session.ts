@@ -4,7 +4,7 @@ import { useMutation } from "convex/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import type { EditorMarker } from "@/lib/ads/contracts";
+import type { EditorMarker, MarkerType } from "@/lib/ads/contracts";
 import {
   type EditorCommand,
   type EditorHistoryState,
@@ -18,10 +18,17 @@ import {
   replaceMarkerId,
 } from "@/lib/ads/editor-history";
 
+export interface CreateMarkerArgs {
+  markerType: MarkerType;
+  startMs: number;
+  adAssetIds: string[];
+}
+
 export interface EditorSession {
   markers: EditorMarker[];
   moveMarker: (markerId: string, newStartMs: number) => Promise<void>;
   deleteMarker: (markerId: string) => Promise<void>;
+  createMarker: (args: CreateMarkerArgs) => Promise<void>;
   trackCreation: (markerId: string, snapshot: MarkerSnapshot) => void;
   undo: () => Promise<void>;
   redo: () => Promise<void>;
@@ -139,6 +146,31 @@ export function useEditorSession({
     [],
   );
 
+  const createMarker = useCallback(
+    async (args: CreateMarkerArgs) => {
+      const result = await createMarkerMut({
+        episodeSlug,
+        markerType: args.markerType,
+        startMs: args.startMs,
+        adAssetIds: args.adAssetIds as Id<"adAssets">[],
+      });
+
+      const snapshot: MarkerSnapshot = {
+        episodeSlug,
+        markerType: args.markerType,
+        startMs: args.startMs,
+        label: result.label,
+        notes: null,
+        adAssetIds: args.adAssetIds,
+      };
+
+      setHistory((h) =>
+        pushCommand(h, { kind: "create", markerId: result.id, snapshot }),
+      );
+    },
+    [episodeSlug, createMarkerMut],
+  );
+
   const executeCommand = useCallback(
     async (command: EditorCommand, direction: "undo" | "redo") => {
       setIsProcessing(true);
@@ -246,6 +278,7 @@ export function useEditorSession({
     markers,
     moveMarker,
     deleteMarker,
+    createMarker,
     trackCreation,
     undo,
     redo,

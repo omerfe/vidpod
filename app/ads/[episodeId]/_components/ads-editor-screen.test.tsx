@@ -24,6 +24,7 @@ vi.mock("@/hooks/use-editor-session", () => ({
     markers: opts.serverMarkers,
     moveMarker: vi.fn(),
     deleteMarker: vi.fn(),
+    createMarker: vi.fn(),
     trackCreation: vi.fn(),
     undo: vi.fn(),
     redo: vi.fn(),

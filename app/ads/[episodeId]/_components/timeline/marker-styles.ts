@@ -16,11 +16,11 @@ export function markerTypeShortLabel(type: EditorMarker["type"]): string {
 export function markerBlockBgClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "bg-blue-300/70 dark:bg-blue-800/50";
+      return "bg-marker-static/70";
     case "auto":
-      return "bg-emerald-300/70 dark:bg-emerald-800/50";
+      return "bg-marker-auto/70";
     case "ab_test":
-      return "bg-amber-300/70 dark:bg-amber-800/50";
+      return "bg-marker-ab/70";
     default:
       return "bg-muted/50";
   }
@@ -29,11 +29,11 @@ export function markerBlockBgClass(type: EditorMarker["type"]): string {
 export function markerBlockBorderClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "border-blue-500/60 dark:border-blue-600/40";
+      return "border-marker-static-accent/60";
     case "auto":
-      return "border-emerald-500/60 dark:border-emerald-600/40";
+      return "border-marker-auto-accent/60";
     case "ab_test":
-      return "border-amber-500/60 dark:border-amber-600/40";
+      return "border-marker-ab-accent/60";
     default:
       return "border-border";
   }
@@ -42,11 +42,11 @@ export function markerBlockBorderClass(type: EditorMarker["type"]): string {
 export function markerBadgeClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "bg-blue-600 text-white dark:bg-blue-500";
+      return "bg-marker-static-accent text-white";
     case "auto":
-      return "bg-emerald-600 text-white dark:bg-emerald-500";
+      return "bg-marker-auto-accent text-white";
     case "ab_test":
-      return "bg-amber-600 text-white dark:bg-amber-500";
+      return "bg-marker-ab-accent text-white";
     default:
       return "bg-muted text-foreground";
   }

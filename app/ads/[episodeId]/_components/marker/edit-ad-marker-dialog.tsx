@@ -22,6 +22,7 @@ import {
   adMarkerFormSchema,
   resolveMarkerStartMs,
 } from "@/lib/ads/create-ad-marker-form";
+import type { AdMarkerCoreFormApi } from "./create-ad-marker-form-api";
 import { CreateAdMarkerStepAbTest } from "./create-ad-marker-step-ab-test";
 import { CreateAdMarkerStepAuto } from "./create-ad-marker-step-auto";
 import { CreateAdMarkerStepStatic } from "./create-ad-marker-step-static";
@@ -109,9 +110,15 @@ function EditAdMarkerDialogSession({
     validators: {
       onSubmit: adMarkerFormSchema,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({
+      value,
+      formApi,
+    }: {
+      value: AdMarkerFormValues;
+      formApi: AdMarkerCoreFormApi;
+    }) => {
       setIsSubmitting(true);
-      form.setFieldValue("serverError", "");
+      formApi.setFieldValue("serverError", "");
 
       const startMs = resolveMarkerStartMs({
         placement: value.placement,
@@ -139,7 +146,7 @@ function EditAdMarkerDialogSession({
       } catch (caught) {
         const message =
           caught instanceof Error ? caught.message : "Could not update marker";
-        form.setFieldValue("serverError", message);
+        formApi.setFieldValue("serverError", message);
       } finally {
         setIsSubmitting(false);
       }

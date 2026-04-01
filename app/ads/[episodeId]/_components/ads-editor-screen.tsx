@@ -94,6 +94,7 @@ function ReadyWorkspace({
           markers={editor.markers}
           playbackTimeMs={engine.currentTimeMs}
           onDeleteMarker={editor.deleteMarker}
+          onCreateMarker={editor.createMarker}
           onMarkerCreated={editor.trackCreation}
         />
         <PlayerPanelSlot

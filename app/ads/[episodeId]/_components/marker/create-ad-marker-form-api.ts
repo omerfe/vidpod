@@ -1,32 +1,37 @@
 import type { FormApi, ReactFormExtendedApi } from "@tanstack/react-form";
-import type { AdMarkerFormValues } from "@/lib/ads/create-ad-marker-form";
+import type {
+  AdMarkerFormValues,
+  adMarkerFormSchema,
+} from "@/lib/ads/create-ad-marker-form";
+
+type OnSubmitValidator = typeof adMarkerFormSchema;
 
 export type AdMarkerCoreFormApi = FormApi<
   AdMarkerFormValues,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  OnSubmitValidator,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  never
 >;
 
 export type AdMarkerFormApi = ReactFormExtendedApi<
   AdMarkerFormValues,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  OnSubmitValidator,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  never
 >;

@@ -18,7 +18,7 @@ export default defineSchema({
     mimeType: v.string(),
     durationMs: v.number(),
     posterPath: v.optional(v.string()),
-  }).index("by_kind", ["kind"]),
+  }),
 
   episodes: defineTable({
     slug: v.string(),
@@ -41,8 +41,7 @@ export default defineSchema({
     mediaRecordId: v.id("mediaRecords"),
   })
     .index("by_slug", ["slug"])
-    .index("by_status_and_name", ["status", "name"])
-    .index("by_campaign_and_name", ["campaign", "name"]),
+    .index("by_status_and_name", ["status", "name"]),
 
   adMarkers: defineTable({
     episodeId: v.id("episodes"),
