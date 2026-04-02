@@ -24,7 +24,7 @@ export function PlayerPanelSlot({
         <div className="relative aspect-video w-full shrink-0 rounded-lg bg-black overflow-hidden">
           <video
             className={`absolute inset-0 size-full object-contain transition-opacity duration-200 ${isShowingAd ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-            preload="auto"
+            preload="metadata"
             src={episode.media.url}
             poster={episode.media.posterUrl ?? undefined}
             {...engine.bindVideoProps}

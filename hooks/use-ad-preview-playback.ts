@@ -31,13 +31,6 @@ export interface AdPreviewPlayback {
   resetSession: () => void;
 }
 
-function safePlay(video: HTMLVideoElement): void {
-  const promise = video.play();
-  if (promise !== undefined) {
-    promise.catch(() => {});
-  }
-}
-
 export function useAdPreviewPlayback(
   engine: PlaybackEngine,
   markers: EditorMarker[],
@@ -48,7 +41,6 @@ export function useAdPreviewPlayback(
   });
   const [adProgressMs, setAdProgressMs] = useState(0);
   const adVideoRef = useRef<HTMLVideoElement | null>(null);
-  const preloadedVideos = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   const triggeredMarkerIds = useRef(new Set<string>());
 
@@ -57,50 +49,11 @@ export function useAdPreviewPlayback(
     [markers, sessionSeed],
   );
 
-  useEffect(() => {
-    const urls = new Set<string>();
-    for (const resolution of resolutions.values()) {
-      urls.add(resolution.resolvedAd.media.url);
-    }
-
-    const existing = preloadedVideos.current;
-    const next = new Map<string, HTMLVideoElement>();
-
-    for (const url of urls) {
-      const cached = existing.get(url);
-      if (cached) {
-        next.set(url, cached);
-        existing.delete(url);
-      } else {
-        const el = document.createElement("video");
-        el.preload = "auto";
-        el.muted = true;
-        el.src = url;
-        el.load();
-        next.set(url, el);
-      }
-    }
-
-    for (const stale of existing.values()) {
-      stale.src = "";
-      stale.load();
-    }
-
-    preloadedVideos.current = next;
-  }, [resolutions]);
-
   const resumeEpisode = useCallback(
     (resumeMs: number) => {
-      const adVideo = adVideoRef.current;
-      if (adVideo) {
-        adVideo.pause();
-      }
       setPreviewState({ mode: "episode" });
       engine.seek(resumeMs + 1);
-      const episodeVideo = engine.videoRef.current;
-      if (episodeVideo) {
-        safePlay(episodeVideo);
-      }
+      engine.play();
     },
     [engine],
   );
@@ -121,7 +74,6 @@ export function useAdPreviewPlayback(
         engine.pause();
 
         const resumeTimeMs = marker.startMs;
-        const adUrl = resolution.resolvedAd.media.url;
 
         setPreviewState({
           mode: "ad",
@@ -132,19 +84,9 @@ export function useAdPreviewPlayback(
 
         const adVideo = adVideoRef.current;
         if (adVideo) {
-          adVideo.src = adUrl;
+          adVideo.src = resolution.resolvedAd.media.url;
           adVideo.currentTime = 0;
-
-          const preloaded = preloadedVideos.current.get(adUrl);
-          if (preloaded && preloaded.readyState >= 3) {
-            safePlay(adVideo);
-          } else {
-            const onReady = () => {
-              adVideo.removeEventListener("canplay", onReady);
-              safePlay(adVideo);
-            };
-            adVideo.addEventListener("canplay", onReady);
-          }
+          adVideo.play().catch(() => {});
         }
         break;
       }
