@@ -21,11 +21,10 @@ export type AdPreviewState =
 export interface AdPreviewPlayback {
   previewState: AdPreviewState;
   adProgressMs: number;
-  adVideoRef: React.RefObject<HTMLVideoElement | null>;
-  bindAdVideoProps: {
-    ref: React.RefObject<HTMLVideoElement | null>;
-    onEnded: React.ReactEventHandler<HTMLVideoElement>;
-  };
+  preloadUrls: string[];
+  activeAdUrl: string | null;
+  registerAdVideoRef: (url: string, el: HTMLVideoElement | null) => void;
+  onAdVideoEnded: () => void;
   resolutions: Map<string, AdPreviewResolution>;
   sessionSeed: string;
   resetSession: () => void;
@@ -40,13 +39,35 @@ export function useAdPreviewPlayback(
     mode: "episode",
   });
   const [adProgressMs, setAdProgressMs] = useState(0);
-  const adVideoRef = useRef<HTMLVideoElement | null>(null);
+  const adVideoElements = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   const triggeredMarkerIds = useRef(new Set<string>());
 
   const resolutions = useMemo(
     () => buildPreviewResolutions(markers, sessionSeed),
     [markers, sessionSeed],
+  );
+
+  const preloadUrls = useMemo(() => {
+    const urls = new Set<string>();
+    for (const resolution of resolutions.values()) {
+      urls.add(resolution.resolvedAd.media.url);
+    }
+    return [...urls];
+  }, [resolutions]);
+
+  const activeAdUrl =
+    previewState.mode === "ad" ? previewState.ad.media.url : null;
+
+  const registerAdVideoRef = useCallback(
+    (url: string, el: HTMLVideoElement | null) => {
+      if (el) {
+        adVideoElements.current.set(url, el);
+      } else {
+        adVideoElements.current.delete(url);
+      }
+    },
+    [],
   );
 
   const resumeEpisode = useCallback(
@@ -74,6 +95,7 @@ export function useAdPreviewPlayback(
         engine.pause();
 
         const resumeTimeMs = marker.startMs;
+        const adUrl = resolution.resolvedAd.media.url;
 
         setPreviewState({
           mode: "ad",
@@ -82,9 +104,8 @@ export function useAdPreviewPlayback(
           resumeTimeMs,
         });
 
-        const adVideo = adVideoRef.current;
+        const adVideo = adVideoElements.current.get(adUrl);
         if (adVideo) {
-          adVideo.src = resolution.resolvedAd.media.url;
           adVideo.currentTime = 0;
           adVideo.play().catch(() => {});
         }
@@ -101,24 +122,26 @@ export function useAdPreviewPlayback(
   ]);
 
   useEffect(() => {
-    const adVideo = adVideoRef.current;
-    if (!adVideo || previewState.mode !== "ad") {
+    if (previewState.mode !== "ad") {
       setAdProgressMs(0);
       return;
     }
+
+    const adVideo = adVideoElements.current.get(previewState.ad.media.url);
+    if (!adVideo) return;
+
     const onTimeUpdate = () => {
       setAdProgressMs(Math.round(adVideo.currentTime * 1000));
     };
     adVideo.addEventListener("timeupdate", onTimeUpdate);
     return () => adVideo.removeEventListener("timeupdate", onTimeUpdate);
-  }, [previewState.mode]);
+  }, [previewState]);
 
-  const onAdEnded: React.ReactEventHandler<HTMLVideoElement> =
-    useCallback(() => {
-      if (previewState.mode !== "ad") return;
-      setAdProgressMs(0);
-      resumeEpisode(previewState.resumeTimeMs);
-    }, [previewState, resumeEpisode]);
+  const onAdVideoEnded = useCallback(() => {
+    if (previewState.mode !== "ad") return;
+    setAdProgressMs(0);
+    resumeEpisode(previewState.resumeTimeMs);
+  }, [previewState, resumeEpisode]);
 
   const resetSession = useCallback(() => {
     setSessionSeed(generateSessionSeed());
@@ -129,11 +152,10 @@ export function useAdPreviewPlayback(
   return {
     previewState,
     adProgressMs,
-    adVideoRef,
-    bindAdVideoProps: {
-      ref: adVideoRef,
-      onEnded: onAdEnded,
-    },
+    preloadUrls,
+    activeAdUrl,
+    registerAdVideoRef,
+    onAdVideoEnded,
     resolutions,
     sessionSeed,
     resetSession,

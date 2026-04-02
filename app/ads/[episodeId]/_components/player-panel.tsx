@@ -24,7 +24,7 @@ export function PlayerPanelSlot({
         <div className="relative aspect-video w-full shrink-0 rounded-lg bg-black overflow-hidden">
           <video
             className={`absolute inset-0 size-full object-contain transition-opacity duration-200 ${isShowingAd ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-            preload="metadata"
+            preload="auto"
             src={episode.media.url}
             poster={episode.media.posterUrl ?? undefined}
             {...engine.bindVideoProps}
@@ -38,19 +38,28 @@ export function PlayerPanelSlot({
             />
           </video>
 
-          <video
-            className={`absolute inset-0 size-full object-contain transition-opacity duration-200 ${isShowingAd ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-            preload="none"
-            {...adPreview.bindAdVideoProps}
-          >
-            <track
-              default
-              kind="captions"
-              label="English captions"
-              src="/empty-captions.vtt"
-              srcLang="en"
-            />
-          </video>
+          {adPreview.preloadUrls.map((url) => {
+            const isActive = adPreview.activeAdUrl === url;
+
+            return (
+              <video
+                key={url}
+                ref={(el) => adPreview.registerAdVideoRef(url, el)}
+                src={url}
+                preload="auto"
+                onEnded={adPreview.onAdVideoEnded}
+                className={`absolute inset-0 size-full object-contain transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+              >
+                <track
+                  default
+                  kind="captions"
+                  label="English captions"
+                  src="/empty-captions.vtt"
+                  srcLang="en"
+                />
+              </video>
+            );
+          })}
 
           {isShowingAd && adPreview.previewState.mode === "ad" ? (
             <div className="absolute top-3 left-3 z-10">
