@@ -1,6 +1,6 @@
 "use client";
 
-import { DotIcon, UploadIcon } from "lucide-react";
+import { DotIcon, MoveLeftIcon, UploadIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,14 +20,15 @@ export function EpisodeHeader({ episode }: EpisodeHeaderProps) {
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          {"<"} Ads
+          <MoveLeftIcon className="size-4 text-muted-foreground" />
+          Ads
         </Link>
         <Button
           type="button"
           variant="outline"
-          size="sm"
+          size="lg"
           onClick={() => setUploadOpen(true)}
         >
           <UploadIcon className="size-3.5" />
@@ -35,7 +36,7 @@ export function EpisodeHeader({ episode }: EpisodeHeaderProps) {
         </Button>
       </div>
 
-      <h1 className="text-2xl font-bold tracking-tight leading-tight">
+      <h1 className="text-2xl font-bold max-w-xl lg:text-3xl">
         {episode.title}
       </h1>
 

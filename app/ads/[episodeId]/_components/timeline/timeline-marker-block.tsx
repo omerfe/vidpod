@@ -3,7 +3,6 @@
 import { GripVertical } from "lucide-react";
 import type { EditorMarker } from "@/lib/ads/contracts";
 import {
-  markerBadgeClass,
   markerBlockBgClass,
   markerBlockBorderClass,
   markerTypeShortLabel,
@@ -47,10 +46,8 @@ export function TimelineMarkerBlock({
         />
       )}
 
-      <div className="pointer-events-none relative flex h-full flex-col justify-between p-1">
-        <span
-          className={`w-fit rounded px-1 py-0.5 text-[10px] font-bold leading-none ${markerBadgeClass(marker.type)}`}
-        >
+      <div className="pointer-events-none relative flex h-full flex-col justify-between items-center p-1">
+        <span className="w-fit rounded px-1 py-0.5 text-[10px] font-bold border leading-none border-primary">
           {markerTypeShortLabel(marker.type)}
         </span>
       </div>

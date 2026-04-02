@@ -42,15 +42,17 @@ export default function RootLayout({
         manrope.variable,
       )}
     >
-      <body className="h-screen flex flex-col">
+      <body>
         <Providers>
-          <AppSidebar />
-
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="h-screen flex flex-col overflow-hidden">
             <AppHeader />
-            <main className="flex-1 overflow-y-auto bg-muted/30">
-              {children}
-            </main>
+
+            <div className="flex flex-1 overflow-hidden">
+              <AppSidebar />
+              <main className="flex-1 overflow-y-auto bg-muted/30">
+                {children}
+              </main>
+            </div>
             <ShellFooter />
           </div>
         </Providers>

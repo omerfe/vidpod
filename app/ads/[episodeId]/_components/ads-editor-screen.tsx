@@ -83,10 +83,10 @@ function ReadyWorkspace({
   });
 
   return (
-    <div className="flex min-h-full flex-col px-8 py-6 gap-6">
+    <div className="flex min-h-full flex-col px-8 lg:px-16 py-6 gap-6">
       <EpisodeHeader episode={editorData.episode} />
 
-      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[1fr_2fr]">
+      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[1fr_1.9fr] lg:gap-8">
         <MarkerPanelSlot
           episodeSlug={episodeSlug}
           episodeDurationMs={editorData.episode.durationMs}

@@ -39,10 +39,7 @@ export function MarkerPanelSlot({
   const [isAutoPlacing, setIsAutoPlacing] = useState(false);
 
   return (
-    <Card
-      data-slot="marker-panel"
-      className="border-border/60 bg-card shadow-sm"
-    >
+    <Card data-slot="marker-panel" className="border-border/60">
       <CardHeader className="space-y-0 flex items-start justify-between gap-4">
         <CardTitle>Ad markers</CardTitle>
         <div className="text-muted-foreground">
@@ -56,7 +53,7 @@ export function MarkerPanelSlot({
             No markers yet. This episode is ready for the first ad insert.
           </div>
         ) : (
-          <div className="flex flex-1 flex-col gap-3 max-h-[70%] overflow-y-auto">
+          <div className="flex flex-1 flex-col gap-3 max-h-[50%] overflow-y-auto">
             {markers.map((marker, index) => (
               <MarkerItem
                 key={marker.id}
@@ -197,11 +194,11 @@ function MarkerItem({
   onViewResults?: () => void;
 }) {
   return (
-    <div className="bg-background flex items-center gap-2">
+    <div className="flex items-center gap-2">
       <div className="w-3 text-xs font-medium tabular-nums text-muted-foreground">
         {index + 1}
       </div>
-      <div className="flex items-center justify-between border border-border rounded-xl p-3 w-full">
+      <div className="flex items-center justify-between border border-border rounded-lg py-3 px-4 w-full">
         <span className="text-xs font-medium tabular-nums text-foreground">
           {formatTimecodeHMS(marker.startMs)}
         </span>
@@ -231,10 +228,10 @@ function MarkerItem({
           ) : null}
           <Button
             type="button"
-            variant="outline"
-            size="icon"
+            variant="destructive"
+            size="icon-lg"
+            className="bg-destructive text-destructive-foreground"
             onClick={() => onDelete?.(marker.id)}
-            className="size-7 rounded-md border-destructive/20 bg-destructive/10 text-destructive shadow-none hover:bg-destructive/20"
           >
             <Trash2 className="size-3.5" />
             <span className="sr-only">Delete marker</span>

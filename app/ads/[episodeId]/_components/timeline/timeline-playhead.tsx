@@ -26,13 +26,13 @@ export function TimelinePlayhead({
         onPointerMove={onScrubMove}
         onPointerUp={onScrubEnd}
       >
-        <div className="flex w-5 h-5 shrink-0 items-center justify-center rounded-md bg-destructive shadow-sm">
+        <div className="flex w-5 h-5 shrink-0 items-center justify-center rounded-md bg-red-500 shadow-sm">
           <GripVertical
             className="size-3 shrink-0 text-white"
             strokeWidth={2.5}
           />
         </div>
-        <div className="h-full w-0.5 bg-destructive" />
+        <div className="h-full w-0.5 bg-red-500" />
       </div>
     </div>
   );

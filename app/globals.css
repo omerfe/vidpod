@@ -27,6 +27,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -40,12 +41,12 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 2.2);
+  --radius-3xl: calc(var(--radius) * 2.4);
+  --radius-4xl: calc(var(--radius) * 2.8);
   --color-marker-static: var(--marker-static);
   --color-marker-static-foreground: var(--marker-static-foreground);
   --color-marker-auto: var(--marker-auto);
@@ -58,13 +59,13 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.9851 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.2103 0.0059 285.89);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -72,8 +73,9 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --destructive: oklch(0.8077 0.1035 19.57);
+  --destructive-foreground: oklch(0.3958 0.1331 25.72);
+  --border: oklch(0.9197 0.004 286.32);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.87 0 0);
@@ -81,14 +83,14 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --marker-static: oklch(0.882 0.059 254.13);
+  --radius: 0.5rem;
+  --marker-static: oklch(0.8091 0.0956 251.81);
   --marker-static-foreground: oklch(0.488 0.243 264.38);
   --marker-static-accent: oklch(0.546 0.245 262.88);
-  --marker-auto: oklch(0.905 0.093 164.15);
+  --marker-auto: oklch(0.8712 0.1363 154.45);
   --marker-auto-foreground: oklch(0.527 0.118 163.93);
   --marker-auto-accent: oklch(0.596 0.145 163.23);
-  --marker-ab: oklch(0.897 0.082 84.43);
+  --marker-ab: oklch(0.8366 0.1165 66.29);
   --marker-ab-foreground: oklch(0.555 0.163 49);
   --marker-ab-accent: oklch(0.666 0.179 58.32);
   --sidebar: oklch(0.985 0 0);

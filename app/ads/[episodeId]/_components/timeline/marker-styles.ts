@@ -16,11 +16,11 @@ export function markerTypeShortLabel(type: EditorMarker["type"]): string {
 export function markerBlockBgClass(type: EditorMarker["type"]): string {
   switch (type) {
     case "static":
-      return "bg-marker-static/70";
+      return "bg-marker-static";
     case "auto":
-      return "bg-marker-auto/70";
+      return "bg-marker-auto";
     case "ab_test":
-      return "bg-marker-ab/70";
+      return "bg-marker-ab";
     default:
       return "bg-muted/50";
   }
@@ -36,18 +36,5 @@ export function markerBlockBorderClass(type: EditorMarker["type"]): string {
       return "border-marker-ab-accent/60";
     default:
       return "border-border";
-  }
-}
-
-export function markerBadgeClass(type: EditorMarker["type"]): string {
-  switch (type) {
-    case "static":
-      return "bg-marker-static-accent text-white";
-    case "auto":
-      return "bg-marker-auto-accent text-white";
-    case "ab_test":
-      return "bg-marker-ab-accent text-white";
-    default:
-      return "bg-muted text-foreground";
   }
 }

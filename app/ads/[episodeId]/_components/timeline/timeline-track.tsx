@@ -63,7 +63,7 @@ export function TimelineTrack({
         return (
           <div
             key={`episeg-${segment.episodeStartMs}`}
-            className="absolute inset-y-2 mx-0.5 rounded-sm bg-fuchsia-300/70"
+            className="absolute inset-y-2 mx-0.5 rounded-sm bg-fuchsia-300"
             style={{
               left: `${segment.startPct}%`,
               width: `${segment.widthPct}%`,
@@ -73,7 +73,7 @@ export function TimelineTrack({
               {segmentBars.map((height, index) => (
                 <div
                   key={`wb-${segment.episodeStartMs}-${index}`}
-                  className="flex-1 bg-fuchsia-100"
+                  className="flex-1 bg-white"
                   style={{ height: `${height * 100}%` }}
                 />
               ))}

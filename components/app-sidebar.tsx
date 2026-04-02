@@ -4,8 +4,8 @@ import {
   BarChart3,
   ChevronDown,
   HelpCircle,
+  HomeIcon,
   Import,
-  LayoutDashboard,
   Megaphone,
   MessageCircle,
   Settings,
@@ -32,7 +32,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutDashboard, active: false },
+  { label: "Dashboard", icon: HomeIcon, active: false },
   { label: "Analytics", icon: BarChart3, active: false },
   { label: "Ads", icon: Megaphone, active: true },
   { label: "Channels", icon: Tv2, active: false },
@@ -50,39 +50,38 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="none" className="border-r">
       <SidebarHeader className="p-4 gap-4">
-        <div className="flex items-center gap-2">
-          <VidpodLogo className="size-6" />
-          <span className="text-lg font-semibold tracking-tight">Vidpod</span>
-        </div>
-        <Button className="w-full" size="default">
+        <Button className="w-full" size="lg">
           Create an episode
         </Button>
-        <button
+        <Button
           type="button"
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+          variant="outline"
+          size="xl"
+          className="bg-background"
+          // className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent transition-colors"
         >
-          <Avatar size="sm">
+          <Avatar>
             <AvatarImage src="/placeholder-podcast.jpg" alt="Podcast" />
             <AvatarFallback className="text-[10px]">DC</AvatarFallback>
           </Avatar>
-          <span className="truncate text-sm">The Diary Of A CEO</span>
+          <span className="truncate">The Diary Of A CEO</span>
           <ChevronDown className="ml-auto size-4 shrink-0 text-muted-foreground" />
-        </button>
+        </Button>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 lg:px-8">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2 lg:gap-8">
               {NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton
                     isActive={item.active}
                     tooltip={item.label}
-                    className="gap-3 h-9"
+                    className="gap-4"
                   >
-                    <item.icon className="size-4" />
-                    <span>{item.label}</span>
+                    <item.icon className="size-4 lg:size-5" />
+                    <span className="lg:text-2xl">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -205,24 +204,5 @@ function MiniChart() {
         />
       </AreaChart>
     </ChartContainer>
-  );
-}
-
-function VidpodLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      width="23"
-      height="26"
-      viewBox="0 0 23 26"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className={className}
-    >
-      <path
-        d="M11.389 0.5L22.026 16.4555C22.5052 17.1743 22.2798 18.1481 21.5336 18.5833L11.389 24.5M11.389 0.5L0.751957 16.4555C0.272808 17.1743 0.499259 18.1488 1.24542 18.584C4.92808 20.7318 7.36981 22.1559 11.389 24.5M11.389 0.5V24.5"
-        stroke="currentColor"
-      />
-    </svg>
   );
 }
