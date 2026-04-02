@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildTimelineSegments,
   centeredScrollLeftForPercent,
   clampZoom,
   clientXToFraction,
+  expandedFractionToEpisodeMs,
   generateTickMarks,
   generateWaveformBars,
   MAX_ZOOM,
@@ -142,6 +144,26 @@ describe("centeredScrollLeftForPercent", () => {
 
   it("returns 0 when there is nothing to scroll", () => {
     expect(centeredScrollLeftForPercent(50, 500, 500)).toBe(0);
+  });
+});
+
+describe("expandedFractionToEpisodeMs", () => {
+  it("maps an expanded midpoint back to the underlying episode time", () => {
+    const { segments } = buildTimelineSegments(4_000, []);
+
+    expect(expandedFractionToEpisodeMs(0.5, segments, 4_000)).toBe(2_000);
+  });
+
+  it("collapses ad regions back to the marker start time", () => {
+    const { segments } = buildTimelineSegments(10_000, [
+      {
+        id: "marker-1",
+        startMs: 4_000,
+        assignments: [{ adAsset: { durationMs: 2_000 } }],
+      },
+    ]);
+
+    expect(expandedFractionToEpisodeMs(0.5, segments, 10_000)).toBe(4_000);
   });
 });
 

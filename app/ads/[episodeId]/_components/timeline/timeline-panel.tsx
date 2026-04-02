@@ -125,7 +125,11 @@ export function TimelinePanelSlot({
         "[data-drag-handle]",
       ) as HTMLElement | null;
 
-      if (gripEl && onMoveMarker) {
+      if (gripEl) {
+        if (!onMoveMarker) {
+          return;
+        }
+
         const markerId = gripEl.dataset.markerId;
         if (!markerId) return;
         const marker = markers.find((m) => m.id === markerId);
@@ -150,8 +154,14 @@ export function TimelinePanelSlot({
           return;
         }
       }
+
+      if (e.pointerType === "mouse" && e.button !== 0) {
+        return;
+      }
+
+      seekFromClientX(e.clientX);
     },
-    [markers, onMoveMarker, segments],
+    [markers, onMoveMarker, seekFromClientX, segments],
   );
 
   const handleTrackPointerMove = useCallback(

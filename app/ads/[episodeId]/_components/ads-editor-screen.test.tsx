@@ -17,6 +17,10 @@ vi.mock("./marker/create-ad-marker-dialog", () => ({
   CreateAdMarkerDialog: () => null,
 }));
 
+vi.mock("./timeline/timeline-panel", () => ({
+  TimelinePanelSlot: () => null,
+}));
+
 vi.mock("@/hooks/use-editor-session", () => ({
   useEditorSession: (opts: {
     serverMarkers: EditorSession["markers"];
