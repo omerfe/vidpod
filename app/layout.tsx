@@ -44,7 +44,7 @@ export default function RootLayout({
     >
       <body>
         <Providers>
-          <div className="h-screen flex flex-col overflow-hidden">
+          <div className="h-screen w-full flex flex-col overflow-hidden">
             <AppHeader />
 
             <div className="flex flex-1 overflow-hidden">
