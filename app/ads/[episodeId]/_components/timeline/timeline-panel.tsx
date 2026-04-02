@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AdPreviewPlayback } from "@/hooks/use-ad-preview-playback";
 import { useAudioWaveform } from "@/hooks/use-audio-waveform";
@@ -8,6 +15,7 @@ import type { PlaybackEngine } from "@/hooks/use-playback-engine";
 import type { EditorMarker } from "@/lib/ads/contracts";
 import {
   buildTimelineSegments,
+  centeredScrollLeftForPercent,
   episodeTimeToExpandedPct,
   expandedFractionToEpisodeMs,
   generateTickMarks,
@@ -52,6 +60,7 @@ export function TimelinePanelSlot({
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const pendingZoomAnchorPctRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
   const isAutoScrollingRef = useRef(false);
   const markerDragRef = useRef<{
@@ -229,12 +238,18 @@ export function TimelinePanelSlot({
     setScrubPctOverride(null);
   }, []);
 
-  const zoomSliderValue = ((zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100;
+  const setZoomAnchored = useCallback((nextZoom: number, anchorPct: number) => {
+    setZoom((prevZoom) => {
+      if (prevZoom === nextZoom) {
+        return prevZoom;
+      }
 
-  const handleZoomSlider = useCallback((values: number[]) => {
-    const fraction = (values[0] ?? 0) / 100;
-    setZoom(MIN_ZOOM + fraction * (MAX_ZOOM - MIN_ZOOM));
+      pendingZoomAnchorPctRef.current = anchorPct;
+      return nextZoom;
+    });
   }, []);
+
+  const zoomSliderValue = ((zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100;
 
   const playheadPct = useMemo(() => {
     if (scrubPctOverride !== null) return scrubPctOverride;
@@ -255,6 +270,15 @@ export function TimelinePanelSlot({
     return episodeTimeToExpandedPct(currentTimeMs, segments);
   }, [scrubPctOverride, durationMs, adPreview, segments, currentTimeMs]);
 
+  const handleZoomSlider = useCallback(
+    (values: number[]) => {
+      const fraction = (values[0] ?? 0) / 100;
+      const nextZoom = MIN_ZOOM + fraction * (MAX_ZOOM - MIN_ZOOM);
+      setZoomAnchored(nextZoom, playheadPct);
+    },
+    [playheadPct, setZoomAnchored],
+  );
+
   const expandedCurrentTimeMs = useMemo(() => {
     return Math.round((playheadPct / 100) * expandedDurationMs);
   }, [playheadPct, expandedDurationMs]);
@@ -265,11 +289,36 @@ export function TimelinePanelSlot({
     function handleWheel(e: WheelEvent) {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      setZoom((z) => (e.deltaY < 0 ? zoomIn(z) : zoomOut(z)));
+      const anchorPct = clientXToExpandedPct(e.clientX);
+      setZoom((currentZoom) => {
+        const nextZoom =
+          e.deltaY < 0 ? zoomIn(currentZoom) : zoomOut(currentZoom);
+        if (nextZoom === currentZoom) {
+          return currentZoom;
+        }
+
+        pendingZoomAnchorPctRef.current = anchorPct;
+        return nextZoom;
+      });
     }
     el.addEventListener("wheel", handleWheel, { passive: false });
     return () => el.removeEventListener("wheel", handleWheel);
-  }, []);
+  }, [clientXToExpandedPct]);
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    const anchorPct = pendingZoomAnchorPctRef.current;
+    if (zoom < MIN_ZOOM || !el || anchorPct === null) {
+      return;
+    }
+
+    pendingZoomAnchorPctRef.current = null;
+    el.scrollLeft = centeredScrollLeftForPercent(
+      anchorPct,
+      el.scrollWidth,
+      el.clientWidth,
+    );
+  }, [zoom]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -277,13 +326,10 @@ export function TimelinePanelSlot({
 
     isAutoScrollingRef.current = true;
     const pct = episodeTimeToExpandedPct(currentTimeMs, segments);
-    const fraction = pct / 100;
-    const contentWidth = el.scrollWidth;
-    const viewWidth = el.clientWidth;
-    const targetScroll = fraction * contentWidth - viewWidth / 2;
-    el.scrollLeft = Math.max(
-      0,
-      Math.min(targetScroll, contentWidth - viewWidth),
+    el.scrollLeft = centeredScrollLeftForPercent(
+      pct,
+      el.scrollWidth,
+      el.clientWidth,
     );
 
     requestAnimationFrame(() => {

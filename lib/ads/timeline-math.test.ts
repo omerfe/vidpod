@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  centeredScrollLeftForPercent,
   clampZoom,
   clientXToFraction,
   generateTickMarks,
@@ -123,6 +124,24 @@ describe("clientXToFraction", () => {
   it("clamps above 1", () => {
     const rect = { left: 100, width: 400 } as DOMRect;
     expect(clientXToFraction(600, rect)).toBe(1);
+  });
+});
+
+describe("centeredScrollLeftForPercent", () => {
+  it("centers the requested percentage when possible", () => {
+    expect(centeredScrollLeftForPercent(50, 2_000, 500)).toBe(750);
+  });
+
+  it("clamps near the start", () => {
+    expect(centeredScrollLeftForPercent(5, 2_000, 500)).toBe(0);
+  });
+
+  it("clamps near the end", () => {
+    expect(centeredScrollLeftForPercent(95, 2_000, 500)).toBe(1_500);
+  });
+
+  it("returns 0 when there is nothing to scroll", () => {
+    expect(centeredScrollLeftForPercent(50, 500, 500)).toBe(0);
   });
 });
 

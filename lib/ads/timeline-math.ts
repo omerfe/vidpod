@@ -40,6 +40,21 @@ export function clientXToFraction(clientX: number, trackRect: DOMRect): number {
   return Math.max(0, Math.min(1, raw));
 }
 
+export function centeredScrollLeftForPercent(
+  percent: number,
+  scrollWidth: number,
+  clientWidth: number,
+): number {
+  if (scrollWidth <= clientWidth || clientWidth <= 0) {
+    return 0;
+  }
+
+  const clampedPercent = Math.max(0, Math.min(100, percent));
+  const targetScroll = (clampedPercent / 100) * scrollWidth - clientWidth / 2;
+  const maxScroll = scrollWidth - clientWidth;
+  return Math.max(0, Math.min(targetScroll, maxScroll));
+}
+
 export function generateTickMarks(
   durationMs: number,
   zoom: number,
