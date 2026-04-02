@@ -4,6 +4,7 @@ import {
   centeredScrollLeftForPercent,
   clampZoom,
   clientXToFraction,
+  episodeTimeToExpandedPct,
   expandedFractionToEpisodeMs,
   generateTickMarks,
   generateWaveformBars,
@@ -164,6 +165,32 @@ describe("expandedFractionToEpisodeMs", () => {
     ]);
 
     expect(expandedFractionToEpisodeMs(0.5, segments, 10_000)).toBe(4_000);
+  });
+});
+
+describe("episodeTimeToExpandedPct", () => {
+  it("returns the expanded percentage for episode time before an ad break", () => {
+    const { segments } = buildTimelineSegments(10_000, [
+      {
+        id: "marker-1",
+        startMs: 4_000,
+        assignments: [{ adAsset: { durationMs: 2_000 } }],
+      },
+    ]);
+
+    expect(episodeTimeToExpandedPct(2_000, segments)).toBeCloseTo(16.67, 1);
+  });
+
+  it("includes inserted ad duration for later episode time", () => {
+    const { segments } = buildTimelineSegments(10_000, [
+      {
+        id: "marker-1",
+        startMs: 4_000,
+        assignments: [{ adAsset: { durationMs: 2_000 } }],
+      },
+    ]);
+
+    expect(episodeTimeToExpandedPct(5_000, segments)).toBeCloseTo(58.33, 1);
   });
 });
 
