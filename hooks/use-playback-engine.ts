@@ -9,6 +9,56 @@ import {
   skipForwardMs,
 } from "@/lib/ads/playback-engine";
 
+function isInterruptedPlayError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  const name =
+    "name" in error && typeof error.name === "string" ? error.name : null;
+  const message =
+    "message" in error && typeof error.message === "string"
+      ? error.message
+      : null;
+
+  if (name === "AbortError") {
+    return true;
+  }
+
+  return message?.includes("interrupted by a call to pause") ?? false;
+}
+
+function reportPlaybackError(error: unknown): void {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.reportError === "function"
+  ) {
+    window.reportError(error);
+    return;
+  }
+
+  console.error(error);
+}
+
+function playMedia(video: HTMLMediaElement | null): void {
+  if (!video) {
+    return;
+  }
+
+  const playPromise = video.play();
+  if (playPromise === undefined) {
+    return;
+  }
+
+  void playPromise.catch((error: unknown) => {
+    if (isInterruptedPlayError(error)) {
+      return;
+    }
+
+    reportPlaybackError(error);
+  });
+}
+
 export interface PlaybackState {
   currentTimeMs: number;
   durationMs: number;
@@ -49,7 +99,7 @@ export function usePlaybackEngine(episodeDurationMs: number): PlaybackEngine {
   }, [episodeDurationMs]);
 
   const play = useCallback(() => {
-    videoRef.current?.play();
+    playMedia(videoRef.current);
   }, []);
 
   const pause = useCallback(() => {
@@ -58,9 +108,12 @@ export function usePlaybackEngine(episodeDurationMs: number): PlaybackEngine {
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {
+      return;
+    }
+
     if (video.paused) {
-      video.play();
+      playMedia(video);
     } else {
       video.pause();
     }
