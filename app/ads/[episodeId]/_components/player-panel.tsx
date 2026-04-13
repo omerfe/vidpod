@@ -9,12 +9,16 @@ interface PlayerPanelSlotProps {
   episode: EditorEpisode;
   engine: PlaybackEngine;
   adPreview: AdPreviewPlayback;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
 }
 
 export function PlayerPanelSlot({
   episode,
   engine,
   adPreview,
+  isPlaying,
+  onTogglePlay,
 }: PlayerPanelSlotProps) {
   const isShowingAd = adPreview.previewState.mode === "ad";
 
@@ -73,7 +77,11 @@ export function PlayerPanelSlot({
           ) : null}
         </div>
 
-        <PlayerControls engine={engine} />
+        <PlayerControls
+          engine={engine}
+          isPlaying={isPlaying}
+          onTogglePlay={onTogglePlay}
+        />
       </CardContent>
     </Card>
   );

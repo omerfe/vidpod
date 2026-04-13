@@ -21,10 +21,12 @@ export type AdPreviewState =
 export interface AdPreviewPlayback {
   previewState: AdPreviewState;
   adProgressMs: number;
+  isPlaying: boolean;
   preloadUrls: string[];
   activeAdUrl: string | null;
   registerAdVideoRef: (url: string, el: HTMLVideoElement | null) => void;
   onAdVideoEnded: () => void;
+  togglePlay: () => void;
   resolutions: Map<string, AdPreviewResolution>;
   sessionSeed: string;
   resetSession: () => void;
@@ -39,9 +41,10 @@ export function useAdPreviewPlayback(
     mode: "episode",
   });
   const [adProgressMs, setAdProgressMs] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const adVideoElements = useRef<Map<string, HTMLVideoElement>>(new Map());
-
   const triggeredMarkerIds = useRef(new Set<string>());
+  const lastEpisodeTimeMs = useRef(0);
 
   const resolutions = useMemo(
     () => buildPreviewResolutions(markers, sessionSeed),
@@ -80,6 +83,29 @@ export function useAdPreviewPlayback(
   );
 
   useEffect(() => {
+    if (previewState.mode === "ad") {
+      return;
+    }
+
+    const tolerance = 300;
+    const previousTimeMs = lastEpisodeTimeMs.current;
+
+    if (engine.currentTimeMs < previousTimeMs - tolerance) {
+      triggeredMarkerIds.current = new Set(
+        markers
+          .filter(
+            (marker) =>
+              triggeredMarkerIds.current.has(marker.id) &&
+              marker.startMs < engine.currentTimeMs - tolerance,
+          )
+          .map((marker) => marker.id),
+      );
+    }
+
+    lastEpisodeTimeMs.current = engine.currentTimeMs;
+  }, [engine.currentTimeMs, markers, previewState.mode]);
+
+  useEffect(() => {
     if (!engine.isPlaying || previewState.mode === "ad") return;
 
     const tolerance = 300;
@@ -108,6 +134,7 @@ export function useAdPreviewPlayback(
         if (adVideo) {
           adVideo.currentTime = 0;
           adVideo.play().catch(() => {});
+          setIsPlaying(true);
         }
         break;
       }
@@ -124,6 +151,7 @@ export function useAdPreviewPlayback(
   useEffect(() => {
     if (previewState.mode !== "ad") {
       setAdProgressMs(0);
+      setIsPlaying(false);
       return;
     }
 
@@ -133,29 +161,67 @@ export function useAdPreviewPlayback(
     const onTimeUpdate = () => {
       setAdProgressMs(Math.round(adVideo.currentTime * 1000));
     };
+    const onPlay = () => {
+      setIsPlaying(true);
+    };
+    const onPause = () => {
+      setIsPlaying(false);
+    };
+
+    setIsPlaying(!adVideo.paused);
     adVideo.addEventListener("timeupdate", onTimeUpdate);
-    return () => adVideo.removeEventListener("timeupdate", onTimeUpdate);
+    adVideo.addEventListener("play", onPlay);
+    adVideo.addEventListener("pause", onPause);
+    return () => {
+      adVideo.removeEventListener("timeupdate", onTimeUpdate);
+      adVideo.removeEventListener("play", onPlay);
+      adVideo.removeEventListener("pause", onPause);
+    };
   }, [previewState]);
 
   const onAdVideoEnded = useCallback(() => {
     if (previewState.mode !== "ad") return;
     setAdProgressMs(0);
+    setIsPlaying(false);
     resumeEpisode(previewState.resumeTimeMs);
   }, [previewState, resumeEpisode]);
+
+  const togglePlay = useCallback(() => {
+    if (previewState.mode !== "ad") {
+      return;
+    }
+
+    const adVideo = adVideoElements.current.get(previewState.ad.media.url);
+    if (!adVideo) {
+      return;
+    }
+
+    if (adVideo.paused) {
+      adVideo.play().catch(() => {});
+      setIsPlaying(true);
+      return;
+    }
+
+    adVideo.pause();
+    setIsPlaying(false);
+  }, [previewState]);
 
   const resetSession = useCallback(() => {
     setSessionSeed(generateSessionSeed());
     setPreviewState({ mode: "episode" });
     triggeredMarkerIds.current.clear();
+    lastEpisodeTimeMs.current = 0;
   }, []);
 
   return {
     previewState,
     adProgressMs,
+    isPlaying,
     preloadUrls,
     activeAdUrl,
     registerAdVideoRef,
     onAdVideoEnded,
+    togglePlay,
     resolutions,
     sessionSeed,
     resetSession,

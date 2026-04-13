@@ -13,12 +13,16 @@ import type { PlaybackEngine } from "../../../../hooks/use-playback-engine";
 
 interface PlayerControlsProps {
   engine: PlaybackEngine;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
 }
 
-export function PlayerControls({ engine }: PlayerControlsProps) {
+export function PlayerControls({
+  engine,
+  isPlaying,
+  onTogglePlay,
+}: PlayerControlsProps) {
   const {
-    isPlaying,
-    togglePlay,
     seek,
     skipForward,
     skipBackward,
@@ -74,7 +78,7 @@ export function PlayerControls({ engine }: PlayerControlsProps) {
           type="button"
           variant="ghost"
           size="icon"
-          onClick={togglePlay}
+          onClick={onTogglePlay}
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (

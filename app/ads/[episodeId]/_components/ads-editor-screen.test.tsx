@@ -1,7 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AdPreviewPlayback } from "@/hooks/use-ad-preview-playback";
+import { useAdPreviewPlayback } from "@/hooks/use-ad-preview-playback";
 import { useAdsWorkspaceSession } from "@/hooks/use-ads-workspace-session";
 import type { EditorSession } from "@/hooks/use-editor-session";
+import type { PlaybackEngine } from "@/hooks/use-playback-engine";
+import { usePlaybackEngine } from "@/hooks/use-playback-engine";
 import type { EpisodeEditorData, EpisodeListItem } from "@/lib/ads/contracts";
 import { AdsEditorScreen } from "./ads-editor-screen";
 
@@ -11,6 +15,14 @@ vi.mock("convex/react", () => ({
 
 vi.mock("@/hooks/use-ads-workspace-session", () => ({
   useAdsWorkspaceSession: vi.fn(),
+}));
+
+vi.mock("@/hooks/use-ad-preview-playback", () => ({
+  useAdPreviewPlayback: vi.fn(),
+}));
+
+vi.mock("@/hooks/use-playback-engine", () => ({
+  usePlaybackEngine: vi.fn(),
 }));
 
 vi.mock("./marker/create-ad-marker-dialog", () => ({
@@ -39,6 +51,11 @@ vi.mock("@/hooks/use-editor-session", () => ({
 }));
 
 const mockedUseAdsWorkspaceSession = vi.mocked(useAdsWorkspaceSession);
+const mockedUseAdPreviewPlayback = vi.mocked(useAdPreviewPlayback);
+const mockedUsePlaybackEngine = vi.mocked(usePlaybackEngine);
+
+let engineMock: PlaybackEngine;
+let adPreviewMock: AdPreviewPlayback;
 
 const episodes: EpisodeListItem[] = [
   {
@@ -201,6 +218,43 @@ const readyEditorData: EpisodeEditorData = {
 describe("AdsEditorScreen", () => {
   beforeEach(() => {
     mockedUseAdsWorkspaceSession.mockReset();
+    engineMock = {
+      currentTimeMs: 0,
+      durationMs: 18_000,
+      isPlaying: false,
+      play: vi.fn(),
+      pause: vi.fn(),
+      togglePlay: vi.fn(),
+      seek: vi.fn(),
+      skipForward: vi.fn(),
+      skipBackward: vi.fn(),
+      jumpToStart: vi.fn(),
+      jumpToEnd: vi.fn(),
+      videoRef: { current: null },
+      bindVideoProps: {
+        ref: { current: null },
+        onTimeUpdate: vi.fn(),
+        onPlay: vi.fn(),
+        onPause: vi.fn(),
+        onLoadedMetadata: vi.fn(),
+        onEnded: vi.fn(),
+      },
+    };
+    adPreviewMock = {
+      previewState: { mode: "episode" },
+      adProgressMs: 0,
+      isPlaying: false,
+      preloadUrls: [],
+      activeAdUrl: null,
+      registerAdVideoRef: vi.fn(),
+      onAdVideoEnded: vi.fn(),
+      togglePlay: vi.fn(),
+      resolutions: new Map(),
+      sessionSeed: "session-seed",
+      resetSession: vi.fn(),
+    };
+    mockedUsePlaybackEngine.mockReturnValue(engineMock);
+    mockedUseAdPreviewPlayback.mockReturnValue(adPreviewMock);
   });
 
   it("shows a loading state while the workspace session is unresolved", () => {
@@ -276,5 +330,36 @@ describe("AdsEditorScreen", () => {
         "No markers yet. This episode is ready for the first ad insert.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("routes the spacebar to the active ad instead of the episode", () => {
+    mockedUseAdsWorkspaceSession.mockReturnValue({
+      status: "ready",
+      episodeSlug: "episode-001",
+      editorData: readyEditorData,
+      episodes,
+    });
+
+    adPreviewMock = {
+      ...adPreviewMock,
+      previewState: {
+        mode: "ad",
+        markerId: "marker-1",
+        ad: readyEditorData.adLibrary[0],
+        resumeTimeMs: 2_000,
+      },
+      isPlaying: true,
+      activeAdUrl: readyEditorData.adLibrary[0].media.url,
+      preloadUrls: [readyEditorData.adLibrary[0].media.url],
+      togglePlay: vi.fn(),
+    };
+    mockedUseAdPreviewPlayback.mockReturnValue(adPreviewMock);
+
+    render(<AdsEditorScreen episodeSlug="episode-001" />);
+
+    fireEvent.keyDown(window, { code: "Space" });
+
+    expect(adPreviewMock.togglePlay).toHaveBeenCalledTimes(1);
+    expect(engineMock.togglePlay).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -73,9 +74,21 @@ function ReadyWorkspace({
   });
 
   const adPreview = useAdPreviewPlayback(engine, editor.markers);
+  const isPlaying =
+    adPreview.previewState.mode === "ad"
+      ? adPreview.isPlaying
+      : engine.isPlaying;
+  const togglePlay = useCallback(() => {
+    if (adPreview.previewState.mode === "ad") {
+      adPreview.togglePlay();
+      return;
+    }
+
+    engine.togglePlay();
+  }, [adPreview, engine]);
 
   useKeyboardShortcuts({
-    togglePlay: engine.togglePlay,
+    togglePlay,
     skipForward: engine.skipForward,
     skipBackward: engine.skipBackward,
     undo: editor.undo,
@@ -101,6 +114,8 @@ function ReadyWorkspace({
           episode={editorData.episode}
           engine={engine}
           adPreview={adPreview}
+          isPlaying={isPlaying}
+          onTogglePlay={togglePlay}
         />
         <TimelinePanelSlot
           markers={editor.markers}
