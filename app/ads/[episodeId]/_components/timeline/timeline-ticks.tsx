@@ -1,11 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
+import type { TickMark } from "@/lib/ads/timeline-math";
 import { formatTimecodeHMS } from "../ads-editor-utils";
-
-interface TickMark {
-  ms: number;
-  percent: number;
-}
 
 interface TimelineTicksProps {
   ticks: TickMark[];
@@ -13,24 +10,47 @@ interface TimelineTicksProps {
 }
 
 export function TimelineTicks({ ticks, durationMs }: TimelineTicksProps) {
+  const majorTicks = useMemo(
+    () => ticks.filter((t) => t.type === "major"),
+    [ticks],
+  );
+
   if (durationMs <= 0) return null;
 
   return (
-    <div className="relative h-6 border-t border-white/10 bg-neutral-900">
+    <div className="relative h-8">
       {ticks.map((tick) => (
         <div
-          key={`tick-${tick.ms}`}
+          key={`tick-${tick.ms}-${tick.type}`}
           className="absolute top-0 -translate-x-1/2 pointer-events-none"
           style={{ left: `${tick.percent}%` }}
         >
-          <div className="flex flex-col items-center">
-            <div className="h-2 w-px bg-white/30" />
-            <span className="text-[10px] tabular-nums text-neutral-400 whitespace-nowrap">
-              {formatTimecodeHMS(tick.ms)}
-            </span>
-          </div>
+          <div
+            className={
+              tick.type === "major"
+                ? "h-7 w-px bg-muted-foreground/50"
+                : "h-2 w-px bg-muted-foreground/30"
+            }
+          />
         </div>
       ))}
+
+      {majorTicks.map((tick, i) => {
+        const prevTick = majorTicks[i - 1];
+        if (!prevTick) return null;
+
+        const centerPct = (prevTick.percent + tick.percent) / 2;
+
+        return (
+          <span
+            key={`label-${tick.ms}`}
+            className="absolute top-3 -translate-x-1/2 pointer-events-none text-sm font-semibold tabular-nums text-muted-foreground/70 whitespace-nowrap"
+            style={{ left: `${centerPct}%` }}
+          >
+            {formatTimecodeHMS(tick.ms)}
+          </span>
+        );
+      })}
     </div>
   );
 }

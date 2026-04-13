@@ -195,29 +195,67 @@ describe("episodeTimeToExpandedPct", () => {
 });
 
 describe("generateTickMarks", () => {
+  const segs60 = buildTimelineSegments(60_000, []).segments;
+
   it("returns empty array for zero duration", () => {
-    expect(generateTickMarks(0, 1, 0)).toEqual([]);
+    expect(generateTickMarks(0, [], 1, 0)).toEqual([]);
   });
 
   it("generates ticks within viewport", () => {
-    const ticks = generateTickMarks(60_000, 1, 0);
+    const ticks = generateTickMarks(60_000, segs60, 1, 0);
     expect(ticks.length).toBeGreaterThan(0);
     for (const tick of ticks) {
       expect(tick.ms).toBeGreaterThanOrEqual(0);
       expect(tick.ms).toBeLessThanOrEqual(60_000);
       expect(tick.percent).toBeGreaterThanOrEqual(0);
       expect(tick.percent).toBeLessThanOrEqual(100);
+      expect(["major", "minor"]).toContain(tick.type);
     }
   });
 
   it("uses finer intervals when zoomed in", () => {
-    const ticksZoom1 = generateTickMarks(60_000, 1, 0);
-    const ticksZoom4 = generateTickMarks(60_000, 4, 0);
-    if (ticksZoom1.length >= 2 && ticksZoom4.length >= 2) {
-      const interval1 = ticksZoom1[1]?.ms - ticksZoom1[0]?.ms;
-      const interval4 = ticksZoom4[1]?.ms - ticksZoom4[0]?.ms;
+    const ticksZoom1 = generateTickMarks(60_000, segs60, 1, 0);
+    const ticksZoom4 = generateTickMarks(60_000, segs60, 4, 0);
+    const majors1 = ticksZoom1.filter((t) => t.type === "major");
+    const majors4 = ticksZoom4.filter((t) => t.type === "major");
+    if (majors1.length >= 2 && majors4.length >= 2) {
+      const interval1 = majors1[1]?.ms - majors1[0]?.ms;
+      const interval4 = majors4[1]?.ms - majors4[0]?.ms;
       expect(interval4).toBeLessThanOrEqual(interval1);
     }
+  });
+
+  it("includes both major and minor ticks", () => {
+    const ticks = generateTickMarks(60_000, segs60, 1, 0);
+    const majors = ticks.filter((t) => t.type === "major");
+    const minors = ticks.filter((t) => t.type === "minor");
+    expect(majors.length).toBeGreaterThan(0);
+    expect(minors.length).toBeGreaterThan(0);
+  });
+
+  it("first tick at 0ms is major", () => {
+    const ticks = generateTickMarks(60_000, segs60, 1, 0);
+    const first = ticks.find((t) => t.ms === 0);
+    expect(first?.type).toBe("major");
+  });
+
+  it("positions ticks correctly when ad segments are present", () => {
+    const { segments } = buildTimelineSegments(30_000, [
+      {
+        id: "ad-1",
+        startMs: 3_000,
+        assignments: [{ adAsset: { durationMs: 5_000 } }],
+      },
+    ]);
+    const ticks = generateTickMarks(30_000, segments, 1, 0);
+    const at0 = ticks.find((t) => t.ms === 0);
+    const at10 = ticks.find((t) => t.ms === 10_000);
+
+    expect(at0).toBeDefined();
+    expect(at0?.percent).toBeCloseTo(0, 1);
+
+    expect(at10).toBeDefined();
+    expect(at10?.percent).toBeGreaterThan((10_000 / 35_000) * 100);
   });
 });
 

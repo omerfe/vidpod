@@ -42,7 +42,7 @@ export function CreateAdMarkerDialog({
             ? "sm:max-w-4xl"
             : step === 3
               ? "sm:max-w-xl"
-              : "sm:max-w-md"
+              : "sm:max-w-lg"
         }
       >
         {open ? (

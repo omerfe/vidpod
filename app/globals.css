@@ -56,6 +56,11 @@
   --color-marker-static-accent: var(--marker-static-accent);
   --color-marker-auto-accent: var(--marker-auto-accent);
   --color-marker-ab-accent: var(--marker-ab-accent);
+  --color-fuchsia-300: var(--fuchsia-300);
+  --color-green-300: var(--green-300);
+  --color-blue-300: var(--blue-300);
+  --color-red-500: var(--red-500);
+  --color-emerald-300: var(--emerald-300);
 }
 
 :root {
@@ -93,6 +98,11 @@
   --marker-ab: oklch(0.8366 0.1165 66.29);
   --marker-ab-foreground: oklch(0.555 0.163 49);
   --marker-ab-accent: oklch(0.666 0.179 58.32);
+  --fuchsia-300: oklch(0.833 0.1322 321.43);
+  --green-300: oklch(0.8712 0.1363 154.45);
+  --blue-300: oklch(0.8091 0.0956 251.81);
+  --red-500: oklch(0.6368 0.2078 25.33);
+  --emerald-300: oklch(0.925 0.0806 155.99);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);

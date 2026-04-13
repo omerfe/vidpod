@@ -30,14 +30,13 @@ export function TimelineToolbar({
   onZoomSlider,
 }: TimelineToolbarProps) {
   return (
-    <div className="flex items-center justify-between pb-3">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
+    <div className="flex items-center justify-between px-4 xl:px-8">
+      <div className="flex items-center gap-4 xl:gap-12">
+        <div className="flex items-center gap-1 xl:gap-3">
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="rounded-full w-5 h-5"
+            className="rounded-full w-5 h-5 xl:w-8 xl:h-8 bg-transparent"
             disabled={!canUndo}
             onClick={onUndo}
           >
@@ -49,12 +48,11 @@ export function TimelineToolbar({
             Undo
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 xl:gap-3">
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="rounded-full w-5 h-5"
+            className="rounded-full w-5 h-5 xl:w-8 xl:h-8 bg-transparent"
             disabled={!canRedo}
             onClick={onRedo}
           >
@@ -68,12 +66,12 @@ export function TimelineToolbar({
         </div>
       </div>
 
-      <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-1 text-xs font-medium tabular-nums text-foreground">
+      <div className="rounded-md border border-border/60 h-10 font-semibold text-base px-3 py-2 tabular-nums text-zinc-500">
         {formatTimecodeHMS(currentTimeMs)}
       </div>
 
-      <div className="flex items-center gap-2">
-        <ZoomOutIcon className="size-3.5" />
+      <div className="flex items-center gap-4 xl:gap-6">
+        <ZoomOutIcon className="size-4" />
         <Slider
           value={[zoomSliderValue]}
           min={0}
@@ -82,7 +80,7 @@ export function TimelineToolbar({
           onValueChange={onZoomSlider}
           className="w-28 cursor-pointer"
         />
-        <ZoomInIcon className="size-3.5" />
+        <ZoomInIcon className="size-4" />
       </div>
     </div>
   );

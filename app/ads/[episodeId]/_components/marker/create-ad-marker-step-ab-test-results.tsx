@@ -1,6 +1,6 @@
 "use client";
 
-import { DotIcon, FlaskConical, MoveRightIcon } from "lucide-react";
+import { FlaskConical, MoveRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { EditorAdAsset, ExperimentSummary } from "@/lib/ads/contracts";
 import {
@@ -37,30 +37,40 @@ function ExperimentVariantRow({ variant }: { variant: RankedVariant }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-4 rounded-2xl border p-3 transition-colors",
+        "flex items-center gap-4 rounded-lg p-3 pr-9 transition-colors",
         variant.isWinner
-          ? "border-emerald-300 bg-emerald-50/60 ring-1 ring-emerald-200"
-          : "border-border/70 bg-background",
+          ? "border-emerald-300 border-3 "
+          : "border-border/70 border",
       )}
     >
-      <div className="flex aspect-video w-28 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-muted/30">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex size-9 items-center justify-center rounded-full bg-background shadow-xs">
-            <FlaskConical className="size-4 text-muted-foreground" />
+      <div className="flex aspect-1.1/1 w-28 shrink-0 items-center justify-center rounded-xl">
+        {variant.asset?.media.posterUrl ? (
+          // biome-ignore lint/performance/noImgElement: This is a valid use case
+          <img
+            src={variant.asset?.media.posterUrl}
+            alt={variant.asset?.name}
+            className="size-full object-cover"
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="flex size-9 items-center justify-center rounded-full bg-background shadow-xs">
+              <FlaskConical className="size-4 text-muted-foreground" />
+            </div>
+            <span className="px-2 text-[11px] font-medium text-muted-foreground">
+              {variant.asset?.folder ?? "Ad variant"}
+            </span>
           </div>
-          <span className="px-2 text-[11px] font-medium text-muted-foreground">
-            {variant.asset?.folder ?? "Ad variant"}
-          </span>
-        </div>
+        )}
       </div>
 
       <div className="min-w-0 flex-1 space-y-1.5">
-        <h5 className="font-medium">{variant.asset?.name ?? variant.label}</h5>
+        <h5 className="font-bold text-base">
+          {variant.asset?.name ?? variant.label}
+        </h5>
 
-        <div className="flex flex-wrap items-center gap-0.5 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-0.5 text-sm text-muted-foreground font-semibold">
+          <span>13/03/24 •</span>
           <span>{formatDuration(variant.asset?.durationMs ?? 0)}</span>
-          <DotIcon className="size-4" />
-          <span>{variant.asset?.cta ?? variant.label}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">

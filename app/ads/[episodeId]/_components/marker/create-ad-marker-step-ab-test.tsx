@@ -99,10 +99,10 @@ export function CreateAdMarkerStepAbTest(props: {
       <aside className="border border-border/70 bg-muted rounded-lg p-4 space-y-6">
         <form.Field name="search">
           {(field) => (
-            <InputGroup className="h-9 bg-background">
+            <InputGroup className="h-11 bg-background">
               <InputGroupInput
                 aria-label="Search ads"
-                placeholder="Search ads..."
+                placeholder="Search library..."
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -265,7 +265,10 @@ export function CreateAdMarkerStepAbTest(props: {
               setSortMode(value as AbTestSortMode);
             }}
           >
-            <SelectTrigger className="justify-between" showIcon={false}>
+            <SelectTrigger
+              className="justify-between h-11! px-4!"
+              showIcon={false}
+            >
               <div className="flex items-center gap-2">
                 <ChevronsUpDownIcon className="size-4 text-muted-foreground" />
                 <SelectValue placeholder="Sort ads" />
@@ -282,7 +285,7 @@ export function CreateAdMarkerStepAbTest(props: {
 
           <form.Field name="search">
             {(field) => (
-              <InputGroup className="h-9 max-w-40">
+              <InputGroup className="h-11 max-w-40">
                 <InputGroupInput
                   aria-label="Search ads"
                   placeholder="Search ads..."
@@ -311,7 +314,7 @@ export function CreateAdMarkerStepAbTest(props: {
             };
 
             return (
-              <ScrollArea className="h-80 md:h-100">
+              <ScrollArea className="h-[60svh]">
                 <div className="space-y-3 p-4">
                   {visibleAds.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
@@ -326,33 +329,43 @@ export function CreateAdMarkerStepAbTest(props: {
                           key={asset.id}
                           type="button"
                           className={cn(
-                            "flex w-full items-center gap-4 rounded-2xl border px-3 py-3 text-left transition-colors",
+                            "flex w-full items-center gap-4 rounded-2xl border px-3 pr-9 py-3 text-left transition-colors",
                             isSelected
                               ? "border-primary/40 bg-primary/5 ring-1 ring-primary/30"
-                              : "border-border/70 bg-background hover:bg-muted/30",
+                              : "border-border/70 hover:bg-muted/30",
                           )}
                           onClick={() => {
                             toggleAsset(asset.id);
                           }}
                         >
-                          <div className="flex aspect-video w-36 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-muted/30">
-                            <div className="flex flex-col items-center gap-2 text-center">
-                              <div className="flex size-9 items-center justify-center rounded-full bg-background shadow-xs">
-                                <FlaskConical className="size-4 text-muted-foreground" />
+                          <div className="flex aspect-1.1/1 w-36 shrink-0 items-center justify-center rounded-xl">
+                            {asset.media.posterUrl ? (
+                              // biome-ignore lint/performance/noImgElement: This is a valid use case
+                              <img
+                                src={asset.media.posterUrl}
+                                alt={asset.name}
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 text-center w-full h-full">
+                                <div className="flex size-9 items-center justify-center rounded-full bg-background shadow-xs">
+                                  <FlaskConical className="size-4 text-muted-foreground" />
+                                </div>
+                                <span className="px-2 text-[11px] font-medium text-muted-foreground">
+                                  {asset.folder}
+                                </span>
                               </div>
-                              <span className="px-2 text-[11px] font-medium text-muted-foreground">
-                                {asset.folder}
-                              </span>
-                            </div>
+                            )}
                           </div>
 
                           <div className="space-y-1.5 flex-1">
-                            <h5 className="font-medium">{asset.name}</h5>
+                            <h5 className="font-bold text-base">
+                              {asset.name}
+                            </h5>
 
-                            <div className="flex flex-wrap items-center gap-0.5 text-xs text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-0.5 text-sm text-muted-foreground font-semibold">
+                              <span>13/03/24 •</span>
                               <span>{formatDuration(asset.durationMs)}</span>
-                              <DotIcon className="size-4" />
-                              <span>{asset.cta}</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5">
                               <Badge variant="outline">{asset.folder}</Badge>
@@ -363,10 +376,10 @@ export function CreateAdMarkerStepAbTest(props: {
 
                           <div
                             className={cn(
-                              "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
+                              "flex size-4 shrink-0 items-center justify-center rounded border transition-colors",
                               isSelected
                                 ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border bg-background",
+                                : "border-primary",
                             )}
                             aria-hidden
                           >

@@ -38,3 +38,16 @@ export function markerBlockBorderClass(type: EditorMarker["type"]): string {
       return "border-border";
   }
 }
+
+export function markerBlockForegroundClass(type: EditorMarker["type"]): string {
+  switch (type) {
+    case "static":
+      return "text-marker-static-foreground";
+    case "auto":
+      return "text-marker-auto-foreground";
+    case "ab_test":
+      return "text-marker-ab-foreground";
+    default:
+      return "text-foreground/40";
+  }
+}

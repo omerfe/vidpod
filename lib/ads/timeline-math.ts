@@ -55,37 +55,62 @@ export function centeredScrollLeftForPercent(
   return Math.max(0, Math.min(targetScroll, maxScroll));
 }
 
+export type TickMarkType = "major" | "minor";
+
+export interface TickMark {
+  ms: number;
+  percent: number;
+  type: TickMarkType;
+}
+
+function getTickConfig(visibleDurationS: number): {
+  majorIntervalS: number;
+  subdivisions: number;
+} {
+  if (visibleDurationS <= 5) return { majorIntervalS: 1, subdivisions: 5 };
+  if (visibleDurationS <= 15) return { majorIntervalS: 5, subdivisions: 5 };
+  if (visibleDurationS <= 30) return { majorIntervalS: 10, subdivisions: 5 };
+  if (visibleDurationS <= 60) return { majorIntervalS: 10, subdivisions: 5 };
+  if (visibleDurationS <= 120) return { majorIntervalS: 30, subdivisions: 6 };
+  if (visibleDurationS <= 600) return { majorIntervalS: 60, subdivisions: 6 };
+  return { majorIntervalS: 300, subdivisions: 5 };
+}
+
 export function generateTickMarks(
-  durationMs: number,
+  episodeDurationMs: number,
+  segments: TimelineSegment[],
   zoom: number,
   viewportStartPct: number,
-): { ms: number; percent: number }[] {
-  if (durationMs <= 0) return [];
+): TickMark[] {
+  if (episodeDurationMs <= 0) return [];
 
-  const durationS = durationMs / 1000;
-  const visibleDurationS = durationS / zoom;
+  const episodeDurationS = episodeDurationMs / 1000;
+  const visibleDurationS = episodeDurationS / zoom;
+  const { majorIntervalS, subdivisions } = getTickConfig(visibleDurationS);
+  const minorIntervalS = majorIntervalS / subdivisions;
 
-  let intervalS: number;
-  if (visibleDurationS <= 10) intervalS = 1;
-  else if (visibleDurationS <= 30) intervalS = 5;
-  else if (visibleDurationS <= 120) intervalS = 10;
-  else if (visibleDurationS <= 600) intervalS = 30;
-  else intervalS = 60;
+  const vpWidthPct = 100 / zoom;
+  const vpEndPct = viewportStartPct + vpWidthPct;
+  const margin = vpWidthPct * 0.1;
 
-  const vpStartMs = (viewportStartPct / 100) * durationMs;
-  const vpEndMs = vpStartMs + durationMs / zoom;
+  const ticks: TickMark[] = [];
 
-  const startTick = Math.ceil(vpStartMs / 1000 / intervalS) * intervalS;
-  const ticks: { ms: number; percent: number }[] = [];
+  for (let s = 0; s * 1000 <= episodeDurationMs; s += minorIntervalS) {
+    const ms = Math.round(s * 1000);
+    const percent = episodeTimeToExpandedPct(ms, segments);
 
-  for (
-    let s = startTick;
-    s * 1000 <= vpEndMs && s * 1000 <= durationMs;
-    s += intervalS
-  ) {
+    if (percent < viewportStartPct - margin || percent > vpEndPct + margin) {
+      continue;
+    }
+
+    const remainder = s % majorIntervalS;
+    const isMajor =
+      Math.abs(remainder) < 0.001 ||
+      Math.abs(remainder - majorIntervalS) < 0.001;
     ticks.push({
-      ms: s * 1000,
-      percent: msToTimelinePercent(s * 1000, durationMs),
+      ms,
+      percent,
+      type: isMajor ? "major" : "minor",
     });
   }
 

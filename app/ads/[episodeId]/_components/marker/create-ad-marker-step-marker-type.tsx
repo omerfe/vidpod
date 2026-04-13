@@ -54,7 +54,7 @@ export function CreateAdMarkerStepMarkerType(props: { form: AdMarkerFormApi }) {
                 key={value}
                 htmlFor={inputId}
                 className={cn(
-                  "block cursor-pointer rounded-xl border bg-card p-4 transition-colors",
+                  "block cursor-pointer rounded-lg border p-4 transition-colors",
                   isSelected
                     ? "border-foreground/25 bg-muted/40"
                     : "border-border hover:bg-muted/20",
@@ -62,11 +62,11 @@ export function CreateAdMarkerStepMarkerType(props: { form: AdMarkerFormApi }) {
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted/60"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-lg"
                     aria-hidden
                   >
                     <Icon
-                      className="size-6 text-foreground"
+                      className="size-8 text-foreground"
                       strokeWidth={1.5}
                     />
                   </div>

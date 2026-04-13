@@ -93,7 +93,6 @@ export function TimelinePanelSlot({
   const {
     clientXToExpandedPct,
     playheadPct,
-    expandedCurrentTimeMs,
     handleScrubStart,
     handleScrubMove,
     handleScrubEnd,
@@ -135,8 +134,8 @@ export function TimelinePanelSlot({
         ? 0
         : (element.scrollLeft / element.scrollWidth) * 100;
 
-    return generateTickMarks(expandedDurationMs, zoom, viewportStartPct);
-  }, [expandedDurationMs, zoom]);
+    return generateTickMarks(durationMs, segments, zoom, viewportStartPct);
+  }, [durationMs, segments, zoom]);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -154,9 +153,9 @@ export function TimelinePanelSlot({
 
   return (
     <Card data-slot="timeline-panel" className="lg:col-span-2">
-      <CardContent>
+      <CardContent className="flex flex-col px-0!">
         <TimelineToolbar
-          currentTimeMs={expandedCurrentTimeMs}
+          currentTimeMs={currentTimeMs}
           canUndo={canUndo}
           canRedo={canRedo}
           onUndo={onUndo}
@@ -166,35 +165,36 @@ export function TimelinePanelSlot({
         />
 
         <div className="relative">
-          <div
-            ref={scrollRef}
-            className="overflow-x-auto overflow-y-clip rounded-lg border border-foreground/10 bg-neutral-950"
-          >
+          <div ref={scrollRef} className="overflow-x-auto">
             <div
               ref={contentRef}
-              className="relative"
+              className="relative px-4 xl:px-8"
               style={{ width: `${zoom * 100}%` }}
             >
-              <TimelineTrack
-                currentTimeMs={currentTimeMs}
-                dragOverride={dragOverride}
-                durationMs={durationMs}
-                markers={markers}
-                segments={segments}
-                ticks={ticks}
-                trackRef={trackRef}
-                waveformBars={waveformBars}
-                onPointerDown={handleTrackPointerDown}
-                onPointerMove={handleTrackPointerMove}
-                onPointerUp={handleTrackPointerUp}
-              />
+              <div className="relative pt-4 xl:pt-10">
+                <div className="bg-zinc-900 rounded-lg py-2 px-1 h-28">
+                  <TimelineTrack
+                    currentTimeMs={currentTimeMs}
+                    dragOverride={dragOverride}
+                    durationMs={durationMs}
+                    markers={markers}
+                    segments={segments}
+                    trackRef={trackRef}
+                    waveformBars={waveformBars}
+                    onPointerDown={handleTrackPointerDown}
+                    onPointerMove={handleTrackPointerMove}
+                    onPointerUp={handleTrackPointerUp}
+                  />
+                </div>
 
-              <TimelinePlayhead
-                percentLeft={playheadPct}
-                onScrubStart={handleScrubStart}
-                onScrubMove={handleScrubMove}
-                onScrubEnd={handleScrubEnd}
-              />
+                <TimelinePlayhead
+                  percentLeft={playheadPct}
+                  onScrubStart={handleScrubStart}
+                  onScrubMove={handleScrubMove}
+                  onScrubEnd={handleScrubEnd}
+                />
+              </div>
+
               <TimelineTicks ticks={ticks} durationMs={expandedDurationMs} />
             </div>
           </div>

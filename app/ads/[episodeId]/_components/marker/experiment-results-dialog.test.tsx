@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type {
   EditorAdAsset,
@@ -168,12 +174,11 @@ describe("ExperimentResultsDialog via MarkerPanel", () => {
       ).toBeInTheDocument();
     });
 
-    expect(screen.getByText("2 variants tested")).toBeInTheDocument();
+    expect(screen.getByText("2 ads tested")).toBeInTheDocument();
     expect(screen.getAllByText("Coffee Break").length).toBeGreaterThanOrEqual(
       1,
     );
     expect(screen.getByText("Creator Tools")).toBeInTheDocument();
-    expect(screen.getByText("Seeded directional signal")).toBeInTheDocument();
   });
 
   it("closes the results dialog when clicking Done", async () => {
@@ -228,7 +233,7 @@ describe("ExperimentResultsDialog via MarkerPanel", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the leading variant label when a winner is set", async () => {
+  it("shows the winning variant first when a winner is set", async () => {
     render(
       <MarkerPanelSlot
         episodeSlug="episode-001"
@@ -247,13 +252,14 @@ describe("ExperimentResultsDialog via MarkerPanel", () => {
       ).toBeInTheDocument();
     });
 
-    expect(screen.getAllByText("Coffee Break").length).toBeGreaterThanOrEqual(
-      1,
-    );
-    expect(
-      screen.getByText((_content, element) => {
-        return element?.textContent === "Leading variant: Coffee Break";
-      }),
-    ).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    const rankedVariantHeadings = within(dialog).getAllByRole("heading", {
+      level: 5,
+    });
+
+    expect(rankedVariantHeadings).toHaveLength(2);
+    expect(rankedVariantHeadings[0]).toHaveTextContent("Coffee Break");
+    expect(rankedVariantHeadings[1]).toHaveTextContent("Creator Tools");
+    expect(within(dialog).getByText("#1")).toBeInTheDocument();
   });
 });

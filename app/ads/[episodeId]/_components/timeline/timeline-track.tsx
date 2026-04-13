@@ -9,7 +9,6 @@ interface TimelineTrackProps {
   durationMs: number;
   markers: EditorMarker[];
   segments: TimelineSegment[];
-  ticks: { ms: number; percent: number }[];
   trackRef: React.RefObject<HTMLDivElement | null>;
   waveformBars: number[];
   onPointerDown: (event: React.PointerEvent) => void;
@@ -17,13 +16,13 @@ interface TimelineTrackProps {
   onPointerUp: (event: React.PointerEvent) => void;
 }
 
+const SEGMENT_GAP_PCT = 0.2;
 export function TimelineTrack({
   currentTimeMs,
   dragOverride,
   durationMs,
   markers,
   segments,
-  ticks,
   trackRef,
   waveformBars,
   onPointerDown,
@@ -33,7 +32,7 @@ export function TimelineTrack({
   return (
     <div
       ref={trackRef}
-      className="relative h-40 select-none"
+      className="relative select-none h-full"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -63,32 +62,24 @@ export function TimelineTrack({
         return (
           <div
             key={`episeg-${segment.episodeStartMs}`}
-            className="absolute inset-y-2 mx-0.5 rounded-sm bg-fuchsia-300"
+            className="absolute inset-y-0 rounded-sm bg-fuchsia-300"
             style={{
-              left: `${segment.startPct}%`,
-              width: `${segment.widthPct}%`,
+              left: `${segment.startPct + SEGMENT_GAP_PCT}%`,
+              width: `${segment.widthPct - SEGMENT_GAP_PCT}%`,
             }}
           >
             <div className="absolute inset-0 flex items-end gap-px px-0.5">
               {segmentBars.map((height, index) => (
                 <div
                   key={`wb-${segment.episodeStartMs}-${index}`}
-                  className="flex-1 bg-white"
-                  style={{ height: `${height * 100}%` }}
+                  className="flex-1 bg-white/40"
+                  style={{ height: `${height * 75}%` }}
                 />
               ))}
             </div>
           </div>
         );
       })}
-
-      {ticks.map((tick) => (
-        <div
-          key={`grid-${tick.ms}`}
-          className="pointer-events-none absolute top-0 z-1 h-full w-px -translate-x-1/2 bg-white/10"
-          style={{ left: `${tick.percent}%` }}
-        />
-      ))}
 
       {segments
         .filter((segment) => segment.type === "ad" && segment.markerId)
@@ -102,15 +93,15 @@ export function TimelineTrack({
 
           const isDragging = dragOverride?.markerId === marker.id;
           const leftPct = isDragging
-            ? (dragOverride?.leftPct ?? segment.startPct)
-            : segment.startPct;
+            ? (dragOverride?.leftPct ?? segment.startPct) + SEGMENT_GAP_PCT
+            : segment.startPct + SEGMENT_GAP_PCT;
 
           return (
             <TimelineMarkerBlock
               key={marker.id}
               marker={marker}
               leftPct={leftPct}
-              widthPct={segment.widthPct}
+              widthPct={segment.widthPct - SEGMENT_GAP_PCT}
               isDragging={isDragging}
             />
           );

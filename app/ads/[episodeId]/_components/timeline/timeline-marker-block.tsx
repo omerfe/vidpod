@@ -2,9 +2,11 @@
 
 import { GripVertical } from "lucide-react";
 import type { EditorMarker } from "@/lib/ads/contracts";
+import { cn } from "@/lib/utils";
 import {
   markerBlockBgClass,
   markerBlockBorderClass,
+  markerBlockForegroundClass,
   markerTypeShortLabel,
 } from "./marker-styles";
 
@@ -26,7 +28,7 @@ export function TimelineMarkerBlock({
 
   return (
     <div
-      className={`absolute inset-y-2 z-1 overflow-hidden rounded-sm transition-shadow ${
+      className={`absolute inset-y-0 z-1 overflow-hidden rounded-sm transition-shadow ${
         isDragging ? "ring-2 ring-foreground/30 shadow-lg" : ""
       } ${markerBlockBorderClass(marker.type)}`}
       style={{
@@ -40,7 +42,7 @@ export function TimelineMarkerBlock({
 
       {posterUrl && (
         <div
-          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
+          className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-1/2 bg-contain bg-center"
           style={{ backgroundImage: `url(${posterUrl})` }}
           aria-hidden="true"
         />
@@ -59,7 +61,9 @@ export function TimelineMarkerBlock({
           isDragging ? "cursor-grabbing" : "cursor-grab"
         }`}
       >
-        <GripVertical className="size-3.5 text-foreground/40" />
+        <GripVertical
+          className={cn("size-3.5", markerBlockForegroundClass(marker.type))}
+        />
       </div>
     </div>
   );

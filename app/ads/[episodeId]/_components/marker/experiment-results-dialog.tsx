@@ -2,7 +2,6 @@
 
 import { FlaskConical } from "lucide-react";
 import { useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,12 +35,12 @@ export function ExperimentResultsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader className="gap-1 space-y-0 text-left">
-          <DialogTitle className="text-lg font-semibold">
+          <DialogTitle className="text-base font-bold">
             A/B test results
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             {view.status === "ready"
-              ? `${view.rankedVariants.length} ${view.rankedVariants.length === 1 ? "variant" : "variants"} tested`
+              ? `${view.rankedVariants.length} ${view.rankedVariants.length === 1 ? "ad" : "ads"} tested`
               : "Review experiment performance for this marker."}
           </DialogDescription>
         </DialogHeader>
@@ -55,19 +54,7 @@ export function ExperimentResultsDialog({
         ) : null}
 
         {view.status === "ready" ? (
-          <div className="space-y-4">
-            <ExperimentVariantList rankedVariants={view.rankedVariants} />
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="outline" className="text-[11px]">
-                {view.confidenceLabel}
-              </Badge>
-              {view.winnerLabel ? (
-                <span>
-                  Leading variant: <strong>{view.winnerLabel}</strong>
-                </span>
-              ) : null}
-            </div>
-          </div>
+          <ExperimentVariantList rankedVariants={view.rankedVariants} />
         ) : null}
 
         <DialogFooter className="border-t-0 bg-popover">
